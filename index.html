@@ -1,5 +1,3 @@
-
-Index for github · HTML
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -36,7 +34,7 @@ Index for github · HTML
   a{ text-decoration:none; color:inherit; }
   img,svg{ max-width:100%; display:block; }
   .container{ max-width:1180px; margin:0 auto; padding:0 24px; }
- 
+
   /* Logo mark */
   .logo-mark{ flex-shrink:0; }
   .logo-lockup{ display:flex; align-items:center; gap:12px; }
@@ -45,7 +43,7 @@ Index for github · HTML
   .logo-text .lt2{ font-family:'Poppins',sans-serif; font-weight:600; font-size:0.55rem; color:var(--teal); letter-spacing:2.5px; margin-top:2px; }
   footer .logo-text .lt1{ color:#fff; }
   footer .logo-text .lt2{ color:#8fd4c8; }
- 
+
   /* Header */
   header{
     position:sticky; top:0; z-index:100;
@@ -66,7 +64,7 @@ Index for github · HTML
   }
   .nav-cta:hover{ background:var(--teal); transform:translateY(-1px); }
   .menu-toggle{ display:none; font-size:1.6rem; background:none; border:none; color:var(--navy); cursor:pointer; }
- 
+
   /* Hero */
   .hero{
     padding:80px 24px 90px;
@@ -110,7 +108,7 @@ Index for github · HTML
     background:radial-gradient(circle, rgba(74,155,145,0.18), transparent 70%);
   }
   .hero-visual-logo img{ position:relative; z-index:1; }
- 
+
   /* Trust bar */
   .trust-bar{
     background:#fff; border-top:1px solid rgba(30,58,82,0.08); border-bottom:1px solid rgba(30,58,82,0.08);
@@ -118,7 +116,7 @@ Index for github · HTML
   }
   .trust-bar div{ display:flex; align-items:center; gap:10px; }
   .trust-bar .dot{ width:8px; height:8px; border-radius:50%; background:var(--teal); }
- 
+
   /* Section generic */
   section{ padding:90px 24px; }
   .section-head{ text-align:center; max-width:640px; margin:0 auto 54px; }
@@ -127,7 +125,7 @@ Index for github · HTML
   }
   .section-head h2{ font-size:2.1rem; font-weight:800; margin:12px 0 14px; }
   .section-head p{ color:var(--muted); font-size:1.03rem; }
- 
+
   /* About */
   .about{ background:var(--mint); }
   .about-grid{
@@ -143,7 +141,7 @@ Index for github · HTML
   .about-stats{ display:flex; gap:40px; margin-top:28px; }
   .about-stats div strong{ display:block; font-size:1.7rem; color:var(--teal); font-family:'Poppins',sans-serif; }
   .about-stats div span{ font-size:0.85rem; color:var(--muted); }
- 
+
   /* Features */
   .features{ background:var(--cream); }
   .feature-grid{
@@ -160,7 +158,22 @@ Index for github · HTML
   }
   .feature-card h3{ font-size:1.08rem; margin-bottom:10px; }
   .feature-card p{ font-size:0.9rem; color:var(--muted); }
- 
+
+  /* Finishes */
+  .finishes{ background:var(--mint); }
+  .finish-grid{
+    display:grid; grid-template-columns:repeat(4,1fr); gap:22px; max-width:1180px; margin:0 auto;
+  }
+  .finish-card{
+    background:#fff; border-radius:var(--radius); overflow:hidden; box-shadow:var(--shadow); transition:transform .25s;
+  }
+  .finish-card:hover{ transform:translateY(-4px); }
+  .finish-card .finish-photo{ height:170px; overflow:hidden; }
+  .finish-card .finish-photo img{ width:100%; height:100%; object-fit:cover; }
+  .finish-card .finish-label{ padding:14px 16px; }
+  .finish-card .finish-label .fname{ font-weight:700; color:var(--navy); font-size:0.95rem; }
+  .finish-card .finish-label .fcode{ font-size:0.78rem; color:var(--muted); letter-spacing:0.5px; margin-top:2px; }
+
   /* Services */
   .services{ background:linear-gradient(160deg, var(--navy), var(--navy-2)); color:#fff; }
   .services .section-head h2{ color:#fff; }
@@ -175,7 +188,7 @@ Index for github · HTML
   .service-card:hover{ background:rgba(255,255,255,0.1); }
   .service-card h3{ color:#fff; font-size:1.2rem; margin-bottom:10px; }
   .service-card p{ color:#b9c8d3; font-size:0.95rem; }
- 
+
   /* Gallery */
   .gallery{ background:var(--cream); }
   .gallery-grid{
@@ -192,7 +205,7 @@ Index for github · HTML
     background:linear-gradient(to top, rgba(22,41,59,0.85), transparent);
     color:#fff; font-size:0.85rem; font-weight:600;
   }
- 
+
   /* Process */
   .process{ background:var(--mint); }
   .process-grid{
@@ -205,8 +218,8 @@ Index for github · HTML
   }
   .process-step h3{ font-size:1.02rem; margin-bottom:8px; }
   .process-step p{ font-size:0.88rem; color:var(--muted); }
- 
- 
+
+
   /* CTA */
   .cta{
     background:linear-gradient(135deg, var(--teal), #3a7d75);
@@ -216,7 +229,7 @@ Index for github · HTML
   .cta p{ color:#e3f2f0; margin-bottom:30px; }
   .cta .btn-primary{ background:#fff; color:var(--teal); }
   .cta .btn-primary:hover{ background:var(--navy); color:#fff; }
- 
+
   /* Contact */
   .contact{ background:var(--cream); }
   .contact-grid{
@@ -246,7 +259,7 @@ Index for github · HTML
     font-weight:700; font-size:1rem; cursor:pointer; width:100%; transition:background .2s;
   }
   form button:hover{ background:var(--teal); }
- 
+
   /* Footer */
   footer{ background:var(--navy-2); color:#a9bac7; padding:56px 24px 26px; }
   .footer-top{
@@ -261,11 +274,12 @@ Index for github · HTML
     max-width:1180px; margin:0 auto; padding-top:24px; border-top:1px solid rgba(255,255,255,0.1);
     text-align:center; font-size:0.82rem; color:#7c8f9c;
   }
- 
+
   @media (max-width: 980px){
     .hero-grid, .about-grid, .contact-grid{ grid-template-columns:1fr; }
     .hero-visual{ order:-1; max-width:420px; margin:0 auto; }
     .feature-grid{ grid-template-columns:repeat(2,1fr); }
+    .finish-grid{ grid-template-columns:repeat(3,1fr); }
     .service-grid{ grid-template-columns:1fr; }
     .gallery-grid{ grid-template-columns:repeat(2,1fr); }
     .process-grid{ grid-template-columns:repeat(2,1fr); }
@@ -275,13 +289,14 @@ Index for github · HTML
     .menu-toggle{ display:block; }
     .hero h1{ font-size:2.1rem; }
     .feature-grid, .gallery-grid, .process-grid{ grid-template-columns:1fr; }
+    .finish-grid{ grid-template-columns:repeat(2,1fr); }
     .trust-bar{ gap:22px; font-size:0.8rem; }
     section{ padding:64px 20px; }
   }
 </style>
 </head>
 <body>
- 
+
 <header>
   <nav class="nav">
     <a href="#" class="logo-lockup logo-mark">
@@ -290,6 +305,7 @@ Index for github · HTML
     <ul class="nav-links">
       <li><a href="#about">About</a></li>
       <li><a href="#features">Why RTA</a></li>
+      <li><a href="#finishes">Finishes</a></li>
       <li><a href="#services">Services</a></li>
       <li><a href="#gallery">Gallery</a></li>
       <li><a href="#process">Process</a></li>
@@ -298,7 +314,7 @@ Index for github · HTML
     <a href="#contact" class="nav-cta">Get a Free Quote</a>
   </nav>
 </header>
- 
+
 <section class="hero">
   <div class="hero-grid">
     <div>
@@ -315,7 +331,7 @@ Index for github · HTML
     </div>
   </div>
 </section>
- 
+
 <div class="trust-bar">
   <div><span class="dot"></span>Full Plywood Construction</div>
   <div><span class="dot"></span>Dovetail Drawer Boxes</div>
@@ -323,7 +339,7 @@ Index for github · HTML
   <div><span class="dot"></span>Ready-to-Assemble, Ships Flat</div>
   <div><span class="dot"></span>Local Full-Assembly Delivery Available</div>
 </div>
- 
+
 <section class="about" id="about">
   <div class="about-grid">
     <div class="about-img"><img src="kitchen-island-weathered-gray.jpg" alt="Westfield Cabinet Co. weathered gray kitchen island with seating"></div>
@@ -339,7 +355,7 @@ Index for github · HTML
     </div>
   </div>
 </section>
- 
+
 <section class="features" id="features">
   <div class="section-head">
     <div class="eyebrow">The Westfield Standard</div>
@@ -369,7 +385,61 @@ Index for github · HTML
     </div>
   </div>
 </section>
- 
+
+<section class="finishes" id="finishes">
+  <div class="section-head">
+    <div class="eyebrow">Available Finishes</div>
+    <h2>11 Colors &amp; Wood Finishes</h2>
+    <p>Every finish below is built to the same Westfield standard — plywood boxes, dovetail drawers, soft-close hardware.</p>
+  </div>
+  <div class="finish-grid">
+    <div class="finish-card">
+      <div class="finish-photo"><img src="finish-aspen-white.jpg" alt="Aspen White cabinet finish"></div>
+      <div class="finish-label"><div class="fname">Aspen White</div><div class="fcode">ASP</div></div>
+    </div>
+    <div class="finish-card">
+      <div class="finish-photo"><img src="finish-bristol-chocolate.jpg" alt="Bristol Chocolate cabinet finish"></div>
+      <div class="finish-label"><div class="fname">Bristol Chocolate</div><div class="fcode">BC</div></div>
+    </div>
+    <div class="finish-card">
+      <div class="finish-photo"><img src="finish-hickory-shaker.jpg" alt="Hickory Shaker cabinet finish"></div>
+      <div class="finish-label"><div class="fname">Hickory Shaker</div><div class="fcode">HS</div></div>
+    </div>
+    <div class="finish-card">
+      <div class="finish-photo"><img src="finish-glazed-mocha.jpg" alt="Glazed Mocha cabinet finish"></div>
+      <div class="finish-label"><div class="fname">Glazed Mocha</div><div class="fcode">MO</div></div>
+    </div>
+    <div class="finish-card">
+      <div class="finish-photo"><img src="finish-winchester-grey.jpg" alt="Winchester Grey cabinet finish"></div>
+      <div class="finish-label"><div class="fname">Winchester Grey</div><div class="fcode">NG</div></div>
+    </div>
+    <div class="finish-card">
+      <div class="finish-photo"><img src="finish-platinum-shaker.jpg" alt="Platinum Shaker cabinet finish"></div>
+      <div class="finish-label"><div class="fname">Platinum Shaker</div><div class="fcode">PS</div></div>
+    </div>
+    <div class="finish-card">
+      <div class="finish-photo"><img src="finish-west-point-grey.jpg" alt="West Point Grey cabinet finish"></div>
+      <div class="finish-label"><div class="fname">West Point Grey</div><div class="fcode">WPG</div></div>
+    </div>
+    <div class="finish-card">
+      <div class="finish-photo"><img src="finish-white-shaker.jpg" alt="White Shaker cabinet finish"></div>
+      <div class="finish-label"><div class="fname">White Shaker</div><div class="fcode">WS</div></div>
+    </div>
+    <div class="finish-card">
+      <div class="finish-photo"><img src="finish-midnight-black-shaker.jpg" alt="Midnight Black Shaker cabinet finish"></div>
+      <div class="finish-label"><div class="fname">Midnight Black Shaker</div><div class="fcode">MBS</div></div>
+    </div>
+    <div class="finish-card">
+      <div class="finish-photo"><img src="finish-fresh-sage.jpg" alt="Fresh Sage cabinet finish"></div>
+      <div class="finish-label"><div class="fname">Fresh Sage</div><div class="fcode">FS</div></div>
+    </div>
+    <div class="finish-card">
+      <div class="finish-photo"><img src="finish-carmel-shaker.jpg" alt="Carmel Shaker cabinet finish"></div>
+      <div class="finish-label"><div class="fname">Carmel Shaker</div><div class="fcode">CS</div></div>
+    </div>
+  </div>
+</section>
+
 <section class="services" id="services">
   <div class="section-head">
     <div class="eyebrow">Who We Serve</div>
@@ -391,7 +461,7 @@ Index for github · HTML
     </div>
   </div>
 </section>
- 
+
 <section class="gallery" id="gallery">
   <div class="section-head">
     <div class="eyebrow">Our Work</div>
@@ -407,7 +477,7 @@ Index for github · HTML
     <div class="gallery-item"><img src="cabinet-detail-maple.jpg" alt="Warm maple cabinet and range hood detail"><span class="cap">Warm Maple Detail</span></div>
   </div>
 </section>
- 
+
 <section class="process" id="process">
   <div class="section-head">
     <div class="eyebrow">How It Works</div>
@@ -436,7 +506,7 @@ Index for github · HTML
     </div>
   </div>
 </section>
- 
+
 <section>
   <div class="cta">
     <h2>Ready to Upgrade Your Kitchen?</h2>
@@ -444,7 +514,7 @@ Index for github · HTML
     <a href="#contact" class="btn-primary">Get a Free Quote + 3D Rendering</a>
   </div>
 </section>
- 
+
 <section class="contact" id="contact">
   <div class="section-head">
     <div class="eyebrow">Get In Touch</div>
@@ -481,7 +551,7 @@ Index for github · HTML
     </form>
   </div>
 </section>
- 
+
 <footer>
   <div class="footer-top">
     <div>
@@ -501,7 +571,6 @@ Index for github · HTML
   </div>
   <div class="footer-bottom">&copy; 2026 Westfield Cabinet Co. All rights reserved.</div>
 </footer>
- 
+
 </body>
 </html>
- 
