@@ -189,23 +189,6 @@
   .service-card h3{ color:#fff; font-size:1.2rem; margin-bottom:10px; }
   .service-card p{ color:#b9c8d3; font-size:0.95rem; }
 
-  /* Gallery */
-  .gallery{ background:var(--cream); }
-  .gallery-grid{
-    display:grid; grid-template-columns:repeat(3,1fr); gap:20px; max-width:1180px; margin:0 auto;
-  }
-  .gallery-item{
-    height:240px; border-radius:var(--radius); overflow:hidden;
-    box-shadow:var(--shadow); position:relative;
-  }
-  .gallery-item img{ width:100%; height:100%; object-fit:cover; transition:transform .35s; }
-  .gallery-item:hover img{ transform:scale(1.06); }
-  .gallery-item .cap{
-    position:absolute; bottom:0; left:0; right:0; padding:14px 16px;
-    background:linear-gradient(to top, rgba(22,41,59,0.85), transparent);
-    color:#fff; font-size:0.85rem; font-weight:600;
-  }
-
   /* Process */
   .process{ background:var(--mint); }
   .process-grid{
@@ -281,14 +264,13 @@
     .feature-grid{ grid-template-columns:repeat(2,1fr); }
     .finish-grid{ grid-template-columns:repeat(3,1fr); }
     .service-grid{ grid-template-columns:1fr; }
-    .gallery-grid{ grid-template-columns:repeat(2,1fr); }
     .process-grid{ grid-template-columns:repeat(2,1fr); }
   }
   @media (max-width: 640px){
     .nav-links{ display:none; }
     .menu-toggle{ display:block; }
     .hero h1{ font-size:2.1rem; }
-    .feature-grid, .gallery-grid, .process-grid{ grid-template-columns:1fr; }
+    .feature-grid, .process-grid{ grid-template-columns:1fr; }
     .finish-grid{ grid-template-columns:repeat(2,1fr); }
     .trust-bar{ gap:22px; font-size:0.8rem; }
     section{ padding:64px 20px; }
@@ -307,7 +289,6 @@
       <li><a href="#features">Why RTA</a></li>
       <li><a href="#finishes">Finishes</a></li>
       <li><a href="#services">Services</a></li>
-      <li><a href="#gallery">Gallery</a></li>
       <li><a href="#process">Process</a></li>
       <li><a href="#contact">Contact</a></li>
     </ul>
@@ -462,22 +443,6 @@
   </div>
 </section>
 
-<section class="gallery" id="gallery">
-  <div class="section-head">
-    <div class="eyebrow">Our Work</div>
-    <h2>Cabinets in the Field</h2>
-    <p>A look at real installs from Strongsville and greater Cleveland-area homeowners and contractors.</p>
-  </div>
-  <div class="gallery-grid">
-    <div class="gallery-item"><img src="kitchen-sage-green.jpg" alt="Sage green shaker cabinets with built-in wine rack"><span class="cap">Sage Green Shaker</span></div>
-    <div class="gallery-item"><img src="kitchen-warm-gray-corner.jpg" alt="Warm gray cabinets with granite countertop"><span class="cap">Warm Gray Collection</span></div>
-    <div class="gallery-item"><img src="cabinet-detail-espresso.jpg" alt="Espresso finish cabinet drawer detail"><span class="cap">Espresso Finish Detail</span></div>
-    <div class="gallery-item"><img src="kitchen-rustic-hickory.jpg" alt="Rustic hickory cabinets in a corner kitchen"><span class="cap">Rustic Hickory</span></div>
-    <div class="gallery-item"><img src="kitchen-charcoal-gray.jpg" alt="Charcoal gray cabinets with mosaic tile backsplash"><span class="cap">Charcoal Gray Shaker</span></div>
-    <div class="gallery-item"><img src="cabinet-detail-maple.jpg" alt="Warm maple cabinet and range hood detail"><span class="cap">Warm Maple Detail</span></div>
-  </div>
-</section>
-
 <section class="process" id="process">
   <div class="section-head">
     <div class="eyebrow">How It Works</div>
@@ -531,24 +496,71 @@
       <div class="row"><div class="ico">🕒</div><div><div class="label">Hours</div><div class="val">Mon–Fri: 8am–5pm · Sat: By appointment</div></div></div>
       <div class="row"><div class="ico">🗺️</div><div><div class="label">Service Area</div><div class="val">Strongsville &amp; Greater Cleveland, OH</div></div></div>
     </div>
-    <form onsubmit="event.preventDefault(); alert('Thanks! This is a demo form — connect it to your email or CRM to start receiving quote requests.');">
+    <form id="quote-form" name="contact" method="POST" data-netlify="true" netlify-honeypot="bot-field">
+      <input type="hidden" name="form-name" value="contact">
+      <p style="position:absolute; left:-9999px;" aria-hidden="true">
+        <label>Don't fill this out if you're human: <input name="bot-field" tabindex="-1" autocomplete="off"></label>
+      </p>
       <label for="name">Name</label>
-      <input type="text" id="name" placeholder="Your full name" required>
+      <input type="text" id="name" name="name" placeholder="Your full name" required>
       <label for="email">Email</label>
-      <input type="email" id="email" placeholder="you@email.com" required>
+      <input type="email" id="email" name="email" placeholder="you@email.com" required>
       <label for="phone">Phone</label>
-      <input type="tel" id="phone" placeholder="440-465-7954">
+      <input type="tel" id="phone" name="phone" placeholder="440-465-7954">
       <label for="type">I am a...</label>
-      <select id="type">
+      <select id="type" name="type">
         <option>DIY Homeowner</option>
         <option>Contractor / Builder</option>
         <option>Other</option>
       </select>
       <label for="message">Project Details</label>
-      <textarea id="message" placeholder="Tell us about your kitchen or project..."></textarea>
+      <textarea id="message" name="message" placeholder="Tell us about your kitchen or project..."></textarea>
       <p style="font-size:0.85rem; color:var(--muted); margin:-6px 0 18px;">Have your existing kitchen dimensions? Email them to <a href="mailto:kwalter@westfieldcabinetco.com" style="color:var(--teal); font-weight:600;">kwalter@westfieldcabinetco.com</a> to get a free 3D rendering included with your quote.</p>
-      <button type="submit">Send Quote Request</button>
+      <button type="submit" id="quote-submit-btn">Send Quote Request</button>
+      <p id="quote-form-status" style="display:none; margin-top:14px; padding:12px 14px; border-radius:10px; font-size:0.9rem;"></p>
     </form>
+    <script>
+      (function () {
+        var form = document.getElementById('quote-form');
+        var status = document.getElementById('quote-form-status');
+        var btn = document.getElementById('quote-submit-btn');
+        function encode(data) {
+          return Object.keys(data).map(function (key) {
+            return encodeURIComponent(key) + '=' + encodeURIComponent(data[key]);
+          }).join('&');
+        }
+        form.addEventListener('submit', function (e) {
+          e.preventDefault();
+          var formData = new FormData(form);
+          var payload = {};
+          formData.forEach(function (value, key) { payload[key] = value; });
+          btn.disabled = true;
+          btn.textContent = 'Sending...';
+          fetch('/', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: encode(payload)
+          })
+            .then(function () {
+              status.style.display = 'block';
+              status.style.background = 'var(--teal-light)';
+              status.style.color = 'var(--teal)';
+              status.textContent = "Thanks! Your quote request was sent — we'll be in touch within one business day.";
+              form.reset();
+              btn.textContent = 'Send Quote Request';
+              btn.disabled = false;
+            })
+            .catch(function () {
+              status.style.display = 'block';
+              status.style.background = '#fdecea';
+              status.style.color = '#b3261e';
+              status.textContent = "Something went wrong sending your request. Please email us directly at kwalter@westfieldcabinetco.com.";
+              btn.textContent = 'Send Quote Request';
+              btn.disabled = false;
+            });
+        });
+      })();
+    </script>
   </div>
 </section>
 
@@ -564,8 +576,8 @@
     </div>
     <ul class="foot-links">
       <li><a href="#about">About</a></li>
+      <li><a href="#finishes">Finishes</a></li>
       <li><a href="#services">Services</a></li>
-      <li><a href="#gallery">Gallery</a></li>
       <li><a href="#contact">Contact</a></li>
     </ul>
   </div>
