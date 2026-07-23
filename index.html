@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Westfield Cabinet Co. | RTA Cabinets in Strongsville & Cleveland, OH</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --navy:#1e3a52;
+    --navy-2:#16293b;
+    --teal:#4a9b91;
+    --teal-light:#e3f2f0;
+    --gold:#c9a24b;
+    --cream:#faf8f4;
+    --mint:#f3f7f6;
+    --ink:#1c2b38;
+    --muted:#5b6b78;
+    --radius:18px;
+    --shadow:0 14px 34px rgba(30,58,82,0.08);
+  }
+  *{ box-sizing:border-box; margin:0; padding:0; }
+  html{ scroll-behavior:smooth; }
+  body{
+    font-family:'Inter', system-ui, sans-serif;
+    background:var(--cream);
+    color:var(--ink);
+    line-height:1.65;
+    -webkit-font-smoothing:antialiased;
+  }
+  h1,h2,h3{ font-family:'Poppins', sans-serif; color:var(--navy); line-height:1.25; }
+  a{ text-decoration:none; color:inherit; }
+  img,svg{ max-width:100%; display:block; }
+  .container{ max-width:1180px; margin:0 auto; padding:0 24px; }
+
+  /* Logo mark */
+  .logo-mark{ flex-shrink:0; }
+  .logo-lockup{ display:flex; align-items:center; gap:12px; }
+  .logo-text{ display:flex; flex-direction:column; line-height:1.05; }
+  .logo-text .lt1{ font-family:'Poppins',sans-serif; font-weight:800; font-size:1.15rem; color:var(--navy); letter-spacing:0.5px; }
+  .logo-text .lt2{ font-family:'Poppins',sans-serif; font-weight:600; font-size:0.55rem; color:var(--teal); letter-spacing:2.5px; margin-top:2px; }
+  footer .logo-text .lt1{ color:#fff; }
+  footer .logo-text .lt2{ color:#8fd4c8; }
+
+  /* Header */
+  header{
+    position:sticky; top:0; z-index:100;
+    background:rgba(250,248,244,0.85);
+    backdrop-filter:blur(10px);
+    border-bottom:1px solid rgba(30,58,82,0.08);
+  }
+  .nav{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:14px 24px; max-width:1180px; margin:0 auto;
+  }
+  .nav-links{ display:flex; gap:30px; list-style:none; font-size:0.92rem; }
+  .nav-links a{ color:var(--muted); font-weight:600; transition:color .2s; }
+  .nav-links a:hover{ color:var(--teal); }
+  .nav-cta{
+    background:var(--navy); color:#fff !important; padding:11px 24px;
+    border-radius:50px; font-weight:600; font-size:0.88rem; transition:transform .2s, background .2s;
+  }
+  .nav-cta:hover{ background:var(--teal); transform:translateY(-1px); }
+  .menu-toggle{ display:none; font-size:1.6rem; background:none; border:none; color:var(--navy); cursor:pointer; }
+
+  /* Hero */
+  .hero{
+    padding:80px 24px 90px;
+  }
+  .hero-grid{
+    display:grid; grid-template-columns:1.1fr 0.9fr; gap:60px; align-items:center;
+    max-width:1180px; margin:0 auto;
+  }
+  .hero .tag{
+    display:inline-flex; align-items:center; gap:8px; background:var(--teal-light); color:var(--teal);
+    padding:8px 16px; border-radius:50px; font-size:0.82rem; font-weight:700; margin-bottom:22px; letter-spacing:0.3px;
+  }
+  .hero h1{ font-size:2.9rem; font-weight:800; margin-bottom:20px; }
+  .hero h1 .accent{ color:var(--teal); }
+  .hero p{ font-size:1.1rem; color:var(--muted); max-width:520px; margin-bottom:34px; }
+  .hero-buttons{ display:flex; gap:16px; flex-wrap:wrap; }
+  .btn-primary{
+    background:var(--navy); color:#fff; padding:15px 30px; border-radius:50px;
+    font-weight:700; font-size:0.98rem; transition:transform .2s, background .2s; display:inline-block;
+  }
+  .btn-primary:hover{ background:var(--teal); transform:translateY(-2px); }
+  .btn-secondary{
+    background:#fff; color:var(--navy); padding:15px 30px; border-radius:50px;
+    font-weight:700; font-size:0.98rem; border:2px solid rgba(30,58,82,0.15); transition:all .2s; display:inline-block;
+  }
+  .btn-secondary:hover{ border-color:var(--navy); }
+  .hero-visual{
+    background:linear-gradient(160deg, var(--navy), var(--navy-2));
+    border-radius:28px; padding:40px; box-shadow:var(--shadow);
+    display:flex; align-items:center; justify-content:center; position:relative; overflow:hidden;
+  }
+  .hero-visual::before{
+    content:''; position:absolute; width:260px; height:260px; background:radial-gradient(circle, rgba(74,155,145,0.35), transparent 70%);
+    top:-60px; right:-60px;
+  }
+  .hero-visual svg{ position:relative; z-index:1; width:100%; height:auto; max-width:340px; }
+  .hero-visual-logo{
+    background:linear-gradient(160deg, #ffffff, var(--mint));
+  }
+  .hero-visual-logo::before{
+    background:radial-gradient(circle, rgba(74,155,145,0.18), transparent 70%);
+  }
+  .hero-visual-logo img{ position:relative; z-index:1; }
+
+  /* Trust bar */
+  .trust-bar{
+    background:#fff; border-top:1px solid rgba(30,58,82,0.08); border-bottom:1px solid rgba(30,58,82,0.08);
+    padding:22px 0; display:flex; justify-content:center; gap:52px; flex-wrap:wrap; font-size:0.88rem; font-weight:600; color:var(--navy);
+  }
+  .trust-bar div{ display:flex; align-items:center; gap:10px; }
+  .trust-bar .dot{ width:8px; height:8px; border-radius:50%; background:var(--teal); }
+
+  /* Section generic */
+  section{ padding:90px 24px; }
+  .section-head{ text-align:center; max-width:640px; margin:0 auto 54px; }
+  .section-head .eyebrow{
+    color:var(--teal); font-weight:700; letter-spacing:1.5px; text-transform:uppercase; font-size:0.78rem;
+  }
+  .section-head h2{ font-size:2.1rem; font-weight:800; margin:12px 0 14px; }
+  .section-head p{ color:var(--muted); font-size:1.03rem; }
+
+  /* About */
+  .about{ background:var(--mint); }
+  .about-grid{
+    display:grid; grid-template-columns:1fr 1fr; gap:64px; align-items:center; max-width:1180px; margin:0 auto;
+  }
+  .about-img{
+    border-radius:var(--radius); height:360px; overflow:hidden;
+    box-shadow:var(--shadow);
+  }
+  .about-img img{ width:100%; height:100%; object-fit:cover; }
+  .about-text h2{ font-size:2rem; font-weight:800; margin-bottom:18px; }
+  .about-text p{ margin-bottom:16px; color:var(--muted); }
+  .about-stats{ display:flex; gap:40px; margin-top:28px; }
+  .about-stats div strong{ display:block; font-size:1.7rem; color:var(--teal); font-family:'Poppins',sans-serif; }
+  .about-stats div span{ font-size:0.85rem; color:var(--muted); }
+
+  /* Features */
+  .features{ background:var(--cream); }
+  .feature-grid{
+    display:grid; grid-template-columns:repeat(4,1fr); gap:26px; max-width:1180px; margin:0 auto;
+  }
+  .feature-card{
+    background:#fff; padding:34px 26px; border-radius:var(--radius); text-align:center;
+    box-shadow:var(--shadow); transition:transform .25s;
+  }
+  .feature-card:hover{ transform:translateY(-6px); }
+  .feature-card .icon{
+    width:56px; height:56px; border-radius:16px; background:var(--teal-light); color:var(--teal);
+    display:flex; align-items:center; justify-content:center; font-size:1.5rem; margin:0 auto 18px;
+  }
+  .feature-card h3{ font-size:1.08rem; margin-bottom:10px; }
+  .feature-card p{ font-size:0.9rem; color:var(--muted); }
+
+  /* Services */
+  .services{ background:linear-gradient(160deg, var(--navy), var(--navy-2)); color:#fff; }
+  .services .section-head h2{ color:#fff; }
+  .services .section-head p{ color:#b9c8d3; }
+  .service-grid{
+    display:grid; grid-template-columns:repeat(3,1fr); gap:26px; max-width:1180px; margin:0 auto;
+  }
+  .service-card{
+    background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.14);
+    padding:32px; border-radius:var(--radius); backdrop-filter:blur(6px); transition:background .2s;
+  }
+  .service-card:hover{ background:rgba(255,255,255,0.1); }
+  .service-card h3{ color:#fff; font-size:1.2rem; margin-bottom:10px; }
+  .service-card p{ color:#b9c8d3; font-size:0.95rem; }
+
+  /* Gallery */
+  .gallery{ background:var(--cream); }
+  .gallery-grid{
+    display:grid; grid-template-columns:repeat(3,1fr); gap:20px; max-width:1180px; margin:0 auto;
+  }
+  .gallery-item{
+    height:240px; border-radius:var(--radius); overflow:hidden;
+    box-shadow:var(--shadow); position:relative;
+  }
+  .gallery-item img{ width:100%; height:100%; object-fit:cover; transition:transform .35s; }
+  .gallery-item:hover img{ transform:scale(1.06); }
+  .gallery-item .cap{
+    position:absolute; bottom:0; left:0; right:0; padding:14px 16px;
+    background:linear-gradient(to top, rgba(22,41,59,0.85), transparent);
+    color:#fff; font-size:0.85rem; font-weight:600;
+  }
+
+  /* Process */
+  .process{ background:var(--mint); }
+  .process-grid{
+    display:grid; grid-template-columns:repeat(4,1fr); gap:26px; max-width:1180px; margin:0 auto; text-align:center;
+  }
+  .process-step{ background:#fff; border-radius:var(--radius); padding:32px 20px; box-shadow:var(--shadow); }
+  .process-step .num{
+    width:44px; height:44px; border-radius:50%; background:var(--teal); color:#fff;
+    display:flex; align-items:center; justify-content:center; font-weight:700; margin:0 auto 16px; font-family:'Poppins',sans-serif;
+  }
+  .process-step h3{ font-size:1.02rem; margin-bottom:8px; }
+  .process-step p{ font-size:0.88rem; color:var(--muted); }
+
+
+  /* CTA */
+  .cta{
+    background:linear-gradient(135deg, var(--teal), #3a7d75);
+    color:#fff; text-align:center; padding:80px 24px; border-radius:32px; max-width:1180px; margin:0 auto;
+  }
+  .cta h2{ color:#fff; font-size:2.1rem; font-weight:800; margin-bottom:14px; }
+  .cta p{ color:#e3f2f0; margin-bottom:30px; }
+  .cta .btn-primary{ background:#fff; color:var(--teal); }
+  .cta .btn-primary:hover{ background:var(--navy); color:#fff; }
+
+  /* Contact */
+  .contact{ background:var(--cream); }
+  .contact-grid{
+    display:grid; grid-template-columns:1fr 1fr; gap:54px; max-width:1180px; margin:0 auto;
+  }
+  .contact-info{ background:#fff; border-radius:var(--radius); padding:38px; box-shadow:var(--shadow); }
+  .contact-info h3{ font-size:1.3rem; margin-bottom:20px; }
+  .contact-info .row{ display:flex; gap:14px; margin-bottom:20px; align-items:flex-start; }
+  .contact-info .row .ico{
+    width:38px; height:38px; border-radius:10px; background:var(--teal-light); color:var(--teal);
+    display:flex; align-items:center; justify-content:center; font-size:1rem; flex-shrink:0;
+  }
+  .contact-info .row .label{ font-weight:700; color:var(--navy); font-size:0.9rem; }
+  .contact-info .row .val{ color:var(--muted); font-size:0.92rem; }
+  .contact-info .row .val a{ color:var(--muted); transition:color .2s; }
+  .contact-info .row .val a:hover{ color:var(--teal); }
+  form{ background:#fff; padding:38px; border-radius:var(--radius); box-shadow:var(--shadow); }
+  form label{ display:block; font-size:0.83rem; font-weight:700; margin-bottom:6px; color:var(--navy); }
+  form input, form select, form textarea{
+    width:100%; padding:12px 14px; margin-bottom:18px; border:1.5px solid rgba(30,58,82,0.12);
+    border-radius:10px; font-family:inherit; font-size:0.95rem; background:var(--cream); transition:border-color .2s;
+  }
+  form input:focus, form select:focus, form textarea:focus{ outline:none; border-color:var(--teal); }
+  form textarea{ resize:vertical; min-height:100px; }
+  form button{
+    background:var(--navy); color:#fff; border:none; padding:15px 28px; border-radius:50px;
+    font-weight:700; font-size:1rem; cursor:pointer; width:100%; transition:background .2s;
+  }
+  form button:hover{ background:var(--teal); }
+
+  /* Footer */
+  footer{ background:var(--navy-2); color:#a9bac7; padding:56px 24px 26px; }
+  .footer-top{
+    display:flex; justify-content:space-between; align-items:flex-start; max-width:1180px; margin:0 auto 36px;
+    flex-wrap:wrap; gap:30px;
+  }
+  .footer-tagline{ max-width:320px; font-size:0.9rem; }
+  .foot-links{ display:flex; gap:28px; list-style:none; flex-wrap:wrap; }
+  .foot-links a{ color:#a9bac7; font-size:0.9rem; transition:color .2s; }
+  .foot-links a:hover{ color:#fff; }
+  .footer-bottom{
+    max-width:1180px; margin:0 auto; padding-top:24px; border-top:1px solid rgba(255,255,255,0.1);
+    text-align:center; font-size:0.82rem; color:#7c8f9c;
+  }
+
+  @media (max-width: 980px){
+    .hero-grid, .about-grid, .contact-grid{ grid-template-columns:1fr; }
+    .hero-visual{ order:-1; max-width:420px; margin:0 auto; }
+    .feature-grid{ grid-template-columns:repeat(2,1fr); }
+    .service-grid{ grid-template-columns:1fr; }
+    .gallery-grid{ grid-template-columns:repeat(2,1fr); }
+    .process-grid{ grid-template-columns:repeat(2,1fr); }
+  }
+  @media (max-width: 640px){
+    .nav-links{ display:none; }
+    .menu-toggle{ display:block; }
+    .hero h1{ font-size:2.1rem; }
+    .feature-grid, .gallery-grid, .process-grid{ grid-template-columns:1fr; }
+    .trust-bar{ gap:22px; font-size:0.8rem; }
+    section{ padding:64px 20px; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <nav class="nav">
+    <a href="#" class="logo-lockup logo-mark">
+      <img src="photos/westfield-logo.png" alt="Westfield Cabinet Co." style="height:56px; width:auto; display:block;">
+    </a>
+    <ul class="nav-links">
+      <li><a href="#about">About</a></li>
+      <li><a href="#features">Why RTA</a></li>
+      <li><a href="#services">Services</a></li>
+      <li><a href="#gallery">Gallery</a></li>
+      <li><a href="#process">Process</a></li>
+      <li><a href="#contact">Contact</a></li>
+    </ul>
+    <a href="#contact" class="nav-cta">Get a Free Quote</a>
+  </nav>
+</header>
+
+<section class="hero">
+  <div class="hero-grid">
+    <div>
+      <span class="tag">● Family Owned &nbsp;·&nbsp; Based in Strongsville, OH</span>
+      <h1>Quality RTA Cabinets, <span class="accent">Delivered Flat</span> and Priced Fair</h1>
+      <p>Plywood boxes, dovetail drawers, and soft-close hinges standard on every cabinet — built for DIYers and contractors who want a premium product without the premium markup. Email us your existing kitchen dimensions and we'll include a free 3D rendering with your quote.</p>
+      <div class="hero-buttons">
+        <a href="#contact" class="btn-primary">Get a Free Quote + 3D Rendering</a>
+        <a href="#services" class="btn-secondary">Browse Our Cabinets</a>
+      </div>
+    </div>
+    <div class="hero-visual hero-visual-logo">
+      <img src="photos/westfield-logo.png" alt="Westfield Cabinet Co. logo" style="max-width:300px; width:80%; display:block;">
+    </div>
+  </div>
+</section>
+
+<div class="trust-bar">
+  <div><span class="dot"></span>Full Plywood Construction</div>
+  <div><span class="dot"></span>Dovetail Drawer Boxes</div>
+  <div><span class="dot"></span>Soft-Close Hinges &amp; Slides</div>
+  <div><span class="dot"></span>Ready-to-Assemble, Ships Flat</div>
+  <div><span class="dot"></span>Local Full-Assembly Delivery Available</div>
+</div>
+
+<section class="about" id="about">
+  <div class="about-grid">
+    <div class="about-img"><img src="photos/kitchen-island-weathered-gray.jpg" alt="Westfield Cabinet Co. weathered gray kitchen island with seating"></div>
+    <div class="about-text">
+      <h2>A Northeast Ohio Family Business Built on Quality</h2>
+      <p>Westfield Cabinet Co. is a family-owned RTA cabinet supplier based in Strongsville, Ohio, serving Cleveland and the surrounding area. We started this business on a simple idea: homeowners and contractors shouldn't have to choose between quality construction and a fair price.</p>
+      <p>Every cabinet we sell is built to the same standard — solid plywood boxes, dovetail-joined drawers, and soft-close hardware — because that's what a cabinet should be, not just what the high-end brands charge extra for.</p>
+      <div class="about-stats">
+        <div><strong>100%</strong><span>Plywood Construction</span></div>
+        <div><strong>Local</strong><span>Strongsville Owned &amp; Operated</span></div>
+        <div><strong>RTA</strong><span>Ships Flat, Ready to Assemble</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="features" id="features">
+  <div class="section-head">
+    <div class="eyebrow">The Westfield Standard</div>
+    <h2>Every Cabinet, No Exceptions</h2>
+    <p>These aren't upgrade options — they're standard on every single cabinet we ship.</p>
+  </div>
+  <div class="feature-grid">
+    <div class="feature-card">
+      <div class="icon">🪵</div>
+      <h3>Plywood Boxes</h3>
+      <p>Full plywood construction throughout — no particle board — for cabinets that hold up for decades.</p>
+    </div>
+    <div class="feature-card">
+      <div class="icon">📐</div>
+      <h3>Dovetail Drawers</h3>
+      <p>Real dovetail joinery on every drawer box for maximum strength and a furniture-grade finish.</p>
+    </div>
+    <div class="feature-card">
+      <div class="icon">🔇</div>
+      <h3>Soft-Close Hinges</h3>
+      <p>Soft-close hinges and drawer slides come standard — no slamming doors, no extra charge.</p>
+    </div>
+    <div class="feature-card">
+      <div class="icon">💰</div>
+      <h3>Honest Pricing</h3>
+      <p>RTA pricing cuts out the middleman so you get a premium cabinet for a fraction of the cost.</p>
+    </div>
+  </div>
+</section>
+
+<section class="services" id="services">
+  <div class="section-head">
+    <div class="eyebrow">Who We Serve</div>
+    <h2>Built for DIYers and Contractors Alike</h2>
+    <p>Whether it's your own kitchen or your next job site, we've got you covered.</p>
+  </div>
+  <div class="service-grid">
+    <div class="service-card">
+      <h3>DIY Homeowners</h3>
+      <p>Clear instructions, straightforward assembly, and a quality result — no contractor required. Save on labor without sacrificing craftsmanship.</p>
+    </div>
+    <div class="service-card">
+      <h3>Contractors &amp; Builders</h3>
+      <p>Consistent quality, reliable lead times, and volume pricing so you can quote with confidence on every job.</p>
+    </div>
+    <div class="service-card">
+      <h3>Kitchen &amp; Bath Remodels</h3>
+      <p>Full lines of base, wall, and vanity cabinets in a range of styles and finishes to match any remodel.</p>
+    </div>
+  </div>
+</section>
+
+<section class="gallery" id="gallery">
+  <div class="section-head">
+    <div class="eyebrow">Our Work</div>
+    <h2>Cabinets in the Field</h2>
+    <p>A look at real installs from Strongsville and greater Cleveland-area homeowners and contractors.</p>
+  </div>
+  <div class="gallery-grid">
+    <div class="gallery-item"><img src="photos/kitchen-sage-green.jpg" alt="Sage green shaker cabinets with built-in wine rack"><span class="cap">Sage Green Shaker</span></div>
+    <div class="gallery-item"><img src="photos/kitchen-warm-gray-corner.jpg" alt="Warm gray cabinets with granite countertop"><span class="cap">Warm Gray Collection</span></div>
+    <div class="gallery-item"><img src="photos/cabinet-detail-espresso.jpg" alt="Espresso finish cabinet drawer detail"><span class="cap">Espresso Finish Detail</span></div>
+    <div class="gallery-item"><img src="photos/kitchen-rustic-hickory.jpg" alt="Rustic hickory cabinets in a corner kitchen"><span class="cap">Rustic Hickory</span></div>
+    <div class="gallery-item"><img src="photos/kitchen-charcoal-gray.jpg" alt="Charcoal gray cabinets with mosaic tile backsplash"><span class="cap">Charcoal Gray Shaker</span></div>
+    <div class="gallery-item"><img src="photos/cabinet-detail-maple.jpg" alt="Warm maple cabinet and range hood detail"><span class="cap">Warm Maple Detail</span></div>
+  </div>
+</section>
+
+<section class="process" id="process">
+  <div class="section-head">
+    <div class="eyebrow">How It Works</div>
+    <h2>From Quote to Kitchen</h2>
+  </div>
+  <div class="process-grid">
+    <div class="process-step">
+      <div class="num">1</div>
+      <h3>Email Your Dimensions</h3>
+      <p>Send us your existing kitchen measurements or plans and we'll put together a free, no-pressure quote — plus a free 3D rendering of your new kitchen.</p>
+    </div>
+    <div class="process-step">
+      <div class="num">2</div>
+      <h3>Choose Your Style</h3>
+      <p>Pick from our range of door styles and finishes to match your space.</p>
+    </div>
+    <div class="process-step">
+      <div class="num">3</div>
+      <h3>We Ship It Flat</h3>
+      <p>Your cabinets arrive ready-to-assemble, packed carefully for a damage-free delivery. Local customers can also choose full assembly before delivery for an additional fee.</p>
+    </div>
+    <div class="process-step">
+      <div class="num">4</div>
+      <h3>Assemble &amp; Install</h3>
+      <p>Simple assembly with clear instructions — or have your contractor handle it.</p>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="cta">
+    <h2>Ready to Upgrade Your Kitchen?</h2>
+    <p>Get a free, no-obligation quote from your local Strongsville-based cabinet experts — email us your existing kitchen dimensions and we'll include a free 3D rendering of your new space.</p>
+    <a href="#contact" class="btn-primary">Get a Free Quote + 3D Rendering</a>
+  </div>
+</section>
+
+<section class="contact" id="contact">
+  <div class="section-head">
+    <div class="eyebrow">Get In Touch</div>
+    <h2>Request Your Free Quote &amp; 3D Rendering</h2>
+    <p>Tell us about your project and email over your existing kitchen dimensions — we'll include a free 3D rendering of your new kitchen with your quote, and get back to you within one business day.</p>
+  </div>
+  <div class="contact-grid">
+    <div class="contact-info">
+      <h3>Contact Information</h3>
+      <div class="row"><div class="ico">📞</div><div><div class="label">Phone / Mobile</div><div class="val"><a href="tel:+14404657954">+1 440-465-7954</a></div></div></div>
+      <div class="row"><div class="ico">✉️</div><div><div class="label">Email</div><div class="val"><a href="mailto:kwalter@westfieldcabinetco.com">kwalter@westfieldcabinetco.com</a></div></div></div>
+      <div class="row"><div class="ico">💬</div><div><div class="label">Messenger</div><div class="val"><a href="https://www.facebook.com/messages/t/61563247348963/" target="_blank" rel="noopener">Westfield Cabinet Co</a></div></div></div>
+      <div class="row"><div class="ico">📱</div><div><div class="label">WhatsApp</div><div class="val"><a href="https://wa.me/12166616639" target="_blank" rel="noopener">+1 216-661-6639</a></div></div></div>
+      <div class="row"><div class="ico">🕒</div><div><div class="label">Hours</div><div class="val">Mon–Fri: 8am–5pm · Sat: By appointment</div></div></div>
+      <div class="row"><div class="ico">🗺️</div><div><div class="label">Service Area</div><div class="val">Strongsville &amp; Greater Cleveland, OH</div></div></div>
+    </div>
+    <form onsubmit="event.preventDefault(); alert('Thanks! This is a demo form — connect it to your email or CRM to start receiving quote requests.');">
+      <label for="name">Name</label>
+      <input type="text" id="name" placeholder="Your full name" required>
+      <label for="email">Email</label>
+      <input type="email" id="email" placeholder="you@email.com" required>
+      <label for="phone">Phone</label>
+      <input type="tel" id="phone" placeholder="440-465-7954">
+      <label for="type">I am a...</label>
+      <select id="type">
+        <option>DIY Homeowner</option>
+        <option>Contractor / Builder</option>
+        <option>Other</option>
+      </select>
+      <label for="message">Project Details</label>
+      <textarea id="message" placeholder="Tell us about your kitchen or project..."></textarea>
+      <p style="font-size:0.85rem; color:var(--muted); margin:-6px 0 18px;">Have your existing kitchen dimensions? Email them to <a href="mailto:kwalter@westfieldcabinetco.com" style="color:var(--teal); font-weight:600;">kwalter@westfieldcabinetco.com</a> to get a free 3D rendering included with your quote.</p>
+      <button type="submit">Send Quote Request</button>
+    </form>
+  </div>
+</section>
+
+<footer>
+  <div class="footer-top">
+    <div>
+      <span class="logo-lockup">
+        <span style="background:#fff; border-radius:12px; padding:6px 10px; display:inline-flex; align-items:center;">
+          <img src="photos/westfield-logo.png" alt="Westfield Cabinet Co." style="height:42px; width:auto; display:block;">
+        </span>
+      </span>
+      <p class="footer-tagline" style="margin-top:14px;">Family-owned RTA cabinet supplier based in Strongsville, serving the greater Cleveland, Ohio area.</p>
+    </div>
+    <ul class="foot-links">
+      <li><a href="#about">About</a></li>
+      <li><a href="#services">Services</a></li>
+      <li><a href="#gallery">Gallery</a></li>
+      <li><a href="#contact">Contact</a></li>
+    </ul>
+  </div>
+  <div class="footer-bottom">&copy; 2026 Westfield Cabinet Co. All rights reserved.</div>
+</footer>
+
+</body>
+</html>
