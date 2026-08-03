@@ -39,13 +39,66 @@ export default async (req) => {
       );
     }
 
-    // ---- 1. Generate the AI preview image ----
-    const prompt =
-      `You are editing a real photo of a kitchen. Replace ONLY the cabinet doors, drawer fronts, ` +
-      `and cabinet boxes with a "${finishName}" cabinet finish. Keep the exact room layout, ` +
-      `countertops, backsplash, flooring, appliances, wall color, lighting, and camera angle ` +
-      `unchanged. The result should look like a photorealistic photo of the same kitchen, just ` +
-      `with new cabinets in the "${finishName}" finish.`;
+    // ---- 1. Fetch a real photo of the chosen finish to use as a style reference ----
+    // This is the key to getting an actual new-cabinet look (door profile, wood grain,
+    // hardware) instead of Gemini just recoloring the existing doors: we show it a real
+    // Westfield sample photo of that exact finish alongside the customer's kitchen.
+    const FINISH_FILENAMES = {
+      ASP: "finish-aspen-white.jpg",
+      BC: "finish-bristol-chocolate.jpg",
+      HS: "finish-hickory-shaker.jpg",
+      MO: "finish-glazed-mocha.jpg",
+      NG: "finish-winchester-grey.jpg",
+      PS: "finish-platinum-shaker.jpg",
+      WPG: "finish-west-point-grey.jpg",
+      WS: "finish-white-shaker.jpg",
+      MBS: "finish-midnight-black-shaker.jpg",
+      FS: "finish-fresh-sage.jpg",
+      CS: "finish-carmel-shaker.jpg"
+    };
+    const SITE_URL = process.env.URL || "https://westfieldcabinet.com";
+    const referenceFilename = FINISH_FILENAMES[finishCode];
+    let referenceImageB64 = null;
+    if (referenceFilename) {
+      try {
+        const refRes = await fetch(`${SITE_URL}/${referenceFilename}`);
+        if (refRes.ok) {
+          const refBuffer = await refRes.arrayBuffer();
+          referenceImageB64 = Buffer.from(refBuffer).toString("base64");
+        }
+      } catch {
+        // If the reference photo can't be fetched, fall back to text-only prompting below.
+      }
+    }
+
+    // ---- 2. Generate the AI preview image ----
+    const promptParts = [];
+    if (referenceImageB64) {
+      promptParts.push({
+        text:
+          `Image 1 is a real photo of a customer's kitchen. Image 2 is an official Westfield ` +
+          `Cabinet Co. sample photo of their "${finishName}" cabinet finish, showing the correct ` +
+          `door style, panel profile, wood grain/texture, sheen, and hardware for that finish.\n\n` +
+          `Edit Image 1 so that every cabinet door, drawer front, and cabinet box is replaced with ` +
+          `new cabinets that match the door style, material, texture, color, and hardware shown in ` +
+          `Image 2 — not just a color tint, but the actual door profile and finish shown in Image 2. ` +
+          `Keep everything else in Image 1 exactly the same: room layout, countertops, backsplash, ` +
+          `flooring, appliances, wall color, lighting, and camera angle. The output should be a ` +
+          `single photorealistic photo of the customer's kitchen with genuinely new "${finishName}" ` +
+          `cabinets installed.`
+      });
+      promptParts.push({ inline_data: { mime_type: imageMime || "image/jpeg", data: imageBase64 } });
+      promptParts.push({ inline_data: { mime_type: "image/jpeg", data: referenceImageB64 } });
+    } else {
+      promptParts.push({
+        text:
+          `Edit this real kitchen photo so every cabinet door, drawer front, and cabinet box is ` +
+          `replaced with new "${finishName}" cabinets — a real door style and material change, not ` +
+          `just a color tint. Keep the room layout, countertops, backsplash, flooring, appliances, ` +
+          `wall color, lighting, and camera angle exactly the same. Photorealistic result.`
+      });
+      promptParts.push({ inline_data: { mime_type: imageMime || "image/jpeg", data: imageBase64 } });
+    }
 
     const geminiRes = await fetch(
       `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image:generateContent?key=${GEMINI_API_KEY}`,
@@ -53,14 +106,7 @@ export default async (req) => {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          contents: [
-            {
-              parts: [
-                { text: prompt },
-                { inline_data: { mime_type: imageMime || "image/jpeg", data: imageBase64 } }
-              ]
-            }
-          ]
+          contents: [{ parts: promptParts }]
         })
       }
     );
