@@ -86,6 +86,16 @@ export default async (req) => {
           `and — importantly — any kitchen island, peninsula, or freestanding cabinetry as well. Do ` +
           `not skip or leave unchanged any cabinet doors or drawer fronts anywhere in the photo, ` +
           `including islands.\n\n` +
+          `IMPORTANT — do a complete replacement, not a recolor: for EVERY individual door and ` +
+          `drawer front in Image 1, fully remove the original panel details (raised panel lines, ` +
+          `moulding, flat panel grooves, existing wood grain direction, existing knots) and rebuild ` +
+          `each one from scratch to exactly match Image 2's door style, panel lines, and grain — ` +
+          `on every single door and drawer, with zero exceptions. Check corner cabinets, small ` +
+          `doors, cabinets above the refrigerator, cabinets above/around the range hood, and any ` +
+          `doors partially visible at the edge of the frame — none of these should retain any trace ` +
+          `of the original door pattern underneath the new color. If you are not fully confident a ` +
+          `door has been completely rebuilt to match Image 2, redo it rather than leaving the ` +
+          `original panel lines visible.\n\n` +
           `Also update the cabinet door/drawer hardware (knobs and pulls) to a style and finish ` +
           `(e.g. matte black, brushed nickel, oil-rubbed bronze, brass) that realistically ` +
           `complements the new "${finishName}" cabinets. Also update the visible countertop surface ` +
@@ -106,7 +116,12 @@ export default async (req) => {
           `replaced with new "${finishName}" cabinets — a real door style and material change, not ` +
           `just a color tint. This includes ALL cabinetry in the photo: perimeter/wall cabinets, ` +
           `base cabinets, and any kitchen island, peninsula, or freestanding cabinetry too — do not ` +
-          `skip the island. Also update the door/drawer hardware (knobs and pulls) to a style and ` +
+          `skip the island. For EVERY individual door and drawer front, fully remove the original ` +
+          `panel details (raised panel lines, moulding, existing wood grain, knots) and rebuild each ` +
+          `one from scratch in the new finish — including corner cabinets, small doors, cabinets ` +
+          `above the refrigerator or range hood, and any doors at the edge of the frame. None should ` +
+          `retain any trace of the original door pattern underneath the new color. Also update the ` +
+          `door/drawer hardware (knobs and pulls) to a style and finish that realistically ` +
           `finish that realistically complements the new cabinets, and update the visible ` +
           `countertop to a complementary modern countertop material and color so the kitchen looks ` +
           `cohesive and finished. Keep the room layout, backsplash, flooring, appliances, wall ` +
