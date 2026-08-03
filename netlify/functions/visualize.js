@@ -82,10 +82,20 @@ export default async (req) => {
           `Edit Image 1 so that every cabinet door, drawer front, and cabinet box is replaced with ` +
           `new cabinets that match the door style, material, texture, color, and hardware shown in ` +
           `Image 2 — not just a color tint, but the actual door profile and finish shown in Image 2. ` +
-          `Keep everything else in Image 1 exactly the same: room layout, countertops, backsplash, ` +
-          `flooring, appliances, wall color, lighting, and camera angle. The output should be a ` +
-          `single photorealistic photo of the customer's kitchen with genuinely new "${finishName}" ` +
-          `cabinets installed.`
+          `This includes ALL cabinetry visible in Image 1: perimeter/wall cabinets, base cabinets, ` +
+          `and — importantly — any kitchen island, peninsula, or freestanding cabinetry as well. Do ` +
+          `not skip or leave unchanged any cabinet doors or drawer fronts anywhere in the photo, ` +
+          `including islands.\n\n` +
+          `Also update the cabinet door/drawer hardware (knobs and pulls) to a style and finish ` +
+          `(e.g. matte black, brushed nickel, oil-rubbed bronze, brass) that realistically ` +
+          `complements the new "${finishName}" cabinets. Also update the visible countertop surface ` +
+          `to a complementary modern countertop material and color that pairs naturally with the new ` +
+          `cabinets, so the whole kitchen looks cohesive and finished.\n\n` +
+          `Keep everything else in Image 1 exactly the same: room layout, backsplash, flooring, ` +
+          `appliances, wall color, lighting, and camera angle. The output should be a single ` +
+          `photorealistic photo of the customer's kitchen with genuinely new "${finishName}" ` +
+          `cabinets, new matching hardware, and a new complementary countertop, installed ` +
+          `throughout, including the island if one is present.`
       });
       promptParts.push({ inline_data: { mime_type: imageMime || "image/jpeg", data: imageBase64 } });
       promptParts.push({ inline_data: { mime_type: "image/jpeg", data: referenceImageB64 } });
@@ -94,8 +104,13 @@ export default async (req) => {
         text:
           `Edit this real kitchen photo so every cabinet door, drawer front, and cabinet box is ` +
           `replaced with new "${finishName}" cabinets — a real door style and material change, not ` +
-          `just a color tint. Keep the room layout, countertops, backsplash, flooring, appliances, ` +
-          `wall color, lighting, and camera angle exactly the same. Photorealistic result.`
+          `just a color tint. This includes ALL cabinetry in the photo: perimeter/wall cabinets, ` +
+          `base cabinets, and any kitchen island, peninsula, or freestanding cabinetry too — do not ` +
+          `skip the island. Also update the door/drawer hardware (knobs and pulls) to a style and ` +
+          `finish that realistically complements the new cabinets, and update the visible ` +
+          `countertop to a complementary modern countertop material and color so the kitchen looks ` +
+          `cohesive and finished. Keep the room layout, backsplash, flooring, appliances, wall ` +
+          `color, lighting, and camera angle exactly the same. Photorealistic result.`
       });
       promptParts.push({ inline_data: { mime_type: imageMime || "image/jpeg", data: imageBase64 } });
     }
@@ -140,7 +155,7 @@ export default async (req) => {
       html: `
         <p>Hi ${customerName || "there"},</p>
         <p>Here's a preview of your kitchen with <strong>${finishName}</strong> cabinets from Westfield Cabinet Co. (attached).</p>
-        <p>This is an AI-generated visualization meant to give you a general sense of the finish — actual results will vary based on lighting, your exact cabinet layout, and materials.</p>
+        <p>This is an AI-generated visualization meant to give you a general sense of the finish — actual results will vary based on lighting, your exact cabinet layout, and materials. Note that the countertop and hardware shown are for visual purposes only, to give a more complete picture of the finished look — countertops are not a product or service offered by Westfield Cabinet Co., and hardware shown is a suggestion, not a specific product.</p>
         <p>Want a formal quote, or have questions about this finish? Reach out any time:</p>
         <p>
           Kevin Walter — Westfield Cabinet Co.<br/>
