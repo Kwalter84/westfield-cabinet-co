@@ -223,8 +223,14 @@ export default async (req) => {
     });
 
     const emailWarnings = [];
-    if (!customerSend.ok) emailWarnings.push("customer email failed to send");
-    if (!leadSend.ok) emailWarnings.push("lead email failed to send");
+    if (!customerSend.ok) {
+      const detail = await customerSend.text().catch(() => "(no body)");
+      emailWarnings.push(`customer email failed to send: ${customerSend.status} ${detail}`);
+    }
+    if (!leadSend.ok) {
+      const detail = await leadSend.text().catch(() => "(no body)");
+      emailWarnings.push(`lead email failed to send: ${leadSend.status} ${detail}`);
+    }
 
     return new Response(
       JSON.stringify({
