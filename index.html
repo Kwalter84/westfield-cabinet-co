@@ -1,240 +1,799 @@
-// netlify/functions/visualize.js
-//
-// Handles the "Visualize Your Kitchen" feature:
-//   1. Takes a customer's kitchen photo + chosen finish
-//   2. Asks Google's Gemini image model to re-render the cabinets in that finish
-//      while keeping everything else in the photo the same
-//   3. Emails the result to the customer (with Kevin's contact info) via Resend
-//   4. Emails a copy of the lead (photo, selection, customer email) to Westfield
-//
-// Requires these environment variables to be set in Netlify:
-//   GEMINI_API_KEY   - from https://aistudio.google.com/apikey
-//   RESEND_API_KEY   - from https://resend.com (requires a verified sending domain)
-//   LEAD_EMAIL       - where new leads should land, e.g. kwalter@westfieldcabinetco.com
-//   FROM_EMAIL       - the "from" address to send as, e.g. quotes@westfieldcabinetco.com
-//                       (must be on a domain verified in Resend)
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Westfield Cabinet Co. | RTA Cabinets in Strongsville & Cleveland, OH</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --navy:#1e3a52;
+    --navy-2:#16293b;
+    --teal:#4a9b91;
+    --teal-light:#e3f2f0;
+    --gold:#c9a24b;
+    --cream:#faf8f4;
+    --mint:#f3f7f6;
+    --ink:#1c2b38;
+    --muted:#5b6b78;
+    --radius:18px;
+    --shadow:0 14px 34px rgba(30,58,82,0.08);
+  }
+  *{ box-sizing:border-box; margin:0; padding:0; }
+  html{ scroll-behavior:smooth; }
+  body{
+    font-family:'Inter', system-ui, sans-serif;
+    background:var(--cream);
+    color:var(--ink);
+    line-height:1.65;
+    -webkit-font-smoothing:antialiased;
+  }
+  h1,h2,h3{ font-family:'Poppins', sans-serif; color:var(--navy); line-height:1.25; }
+  a{ text-decoration:none; color:inherit; }
+  img,svg{ max-width:100%; display:block; }
+  .container{ max-width:1180px; margin:0 auto; padding:0 24px; }
 
-export default async (req) => {
-  if (req.method !== "POST") {
-    return new Response(JSON.stringify({ error: "Method not allowed" }), { status: 405 });
+  /* Logo mark */
+  .logo-mark{ flex-shrink:0; }
+  .logo-lockup{ display:flex; align-items:center; gap:12px; }
+  .logo-text{ display:flex; flex-direction:column; line-height:1.05; }
+  .logo-text .lt1{ font-family:'Poppins',sans-serif; font-weight:800; font-size:1.15rem; color:var(--navy); letter-spacing:0.5px; }
+  .logo-text .lt2{ font-family:'Poppins',sans-serif; font-weight:600; font-size:0.55rem; color:var(--teal); letter-spacing:2.5px; margin-top:2px; }
+  footer .logo-text .lt1{ color:#fff; }
+  footer .logo-text .lt2{ color:#8fd4c8; }
+
+  /* Header */
+  header{
+    position:sticky; top:0; z-index:100;
+    background:rgba(250,248,244,0.85);
+    backdrop-filter:blur(10px);
+    border-bottom:1px solid rgba(30,58,82,0.08);
+  }
+  .nav{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:14px 24px; max-width:1180px; margin:0 auto;
+  }
+  .nav-links{ display:flex; gap:30px; list-style:none; font-size:0.92rem; }
+  .nav-links a{ color:var(--muted); font-weight:600; transition:color .2s; }
+  .nav-links a:hover{ color:var(--teal); }
+  .nav-cta{
+    background:var(--navy); color:#fff !important; padding:11px 24px;
+    border-radius:50px; font-weight:600; font-size:0.88rem; transition:transform .2s, background .2s;
+  }
+  .nav-cta:hover{ background:var(--teal); transform:translateY(-1px); }
+  .menu-toggle{ display:none; font-size:1.6rem; background:none; border:none; color:var(--navy); cursor:pointer; }
+
+  /* Hero */
+  .hero{
+    padding:80px 24px 90px;
+  }
+  .hero-grid{
+    display:grid; grid-template-columns:1.1fr 0.9fr; gap:60px; align-items:center;
+    max-width:1180px; margin:0 auto;
+  }
+  .hero .tag{
+    display:inline-flex; align-items:center; gap:8px; background:var(--teal-light); color:var(--teal);
+    padding:8px 16px; border-radius:50px; font-size:0.82rem; font-weight:700; margin-bottom:22px; letter-spacing:0.3px;
+  }
+  .hero h1{ font-size:2.9rem; font-weight:800; margin-bottom:20px; }
+  .hero h1 .accent{ color:var(--teal); }
+  .hero p{ font-size:1.1rem; color:var(--muted); max-width:520px; margin-bottom:34px; }
+  .hero-buttons{ display:flex; gap:16px; flex-wrap:wrap; }
+  .btn-primary{
+    background:var(--navy); color:#fff; padding:15px 30px; border-radius:50px;
+    font-weight:700; font-size:0.98rem; transition:transform .2s, background .2s; display:inline-block;
+  }
+  .btn-primary:hover{ background:var(--teal); transform:translateY(-2px); }
+  .btn-secondary{
+    background:#fff; color:var(--navy); padding:15px 30px; border-radius:50px;
+    font-weight:700; font-size:0.98rem; border:2px solid rgba(30,58,82,0.15); transition:all .2s; display:inline-block;
+  }
+  .btn-secondary:hover{ border-color:var(--navy); }
+  .hero-visual{
+    background:linear-gradient(160deg, var(--navy), var(--navy-2));
+    border-radius:28px; padding:40px; box-shadow:var(--shadow);
+    display:flex; align-items:center; justify-content:center; position:relative; overflow:hidden;
+  }
+  .hero-visual::before{
+    content:''; position:absolute; width:260px; height:260px; background:radial-gradient(circle, rgba(74,155,145,0.35), transparent 70%);
+    top:-60px; right:-60px;
+  }
+  .hero-visual svg{ position:relative; z-index:1; width:100%; height:auto; max-width:340px; }
+  .hero-visual-logo{
+    background:linear-gradient(160deg, #ffffff, var(--mint));
+  }
+  .hero-visual-logo::before{
+    background:radial-gradient(circle, rgba(74,155,145,0.18), transparent 70%);
+  }
+  .hero-visual-logo img{ position:relative; z-index:1; }
+
+  /* Trust bar */
+  .trust-bar{
+    background:#fff; border-top:1px solid rgba(30,58,82,0.08); border-bottom:1px solid rgba(30,58,82,0.08);
+    padding:22px 0; display:flex; justify-content:center; gap:52px; flex-wrap:wrap; font-size:0.88rem; font-weight:600; color:var(--navy);
+  }
+  .trust-bar div{ display:flex; align-items:center; gap:10px; }
+  .trust-bar .dot{ width:8px; height:8px; border-radius:50%; background:var(--teal); }
+
+  /* Section generic */
+  section{ padding:90px 24px; }
+  .section-head{ text-align:center; max-width:640px; margin:0 auto 54px; }
+  .section-head .eyebrow{
+    color:var(--teal); font-weight:700; letter-spacing:1.5px; text-transform:uppercase; font-size:0.78rem;
+  }
+  .section-head h2{ font-size:2.1rem; font-weight:800; margin:12px 0 14px; }
+  .section-head p{ color:var(--muted); font-size:1.03rem; }
+
+  /* About */
+  .about{ background:var(--mint); }
+  .about-grid{
+    display:grid; grid-template-columns:1fr 1fr; gap:64px; align-items:center; max-width:1180px; margin:0 auto;
+  }
+  .about-img{
+    border-radius:var(--radius); height:360px; overflow:hidden;
+    box-shadow:var(--shadow);
+  }
+  .about-img img{ width:100%; height:100%; object-fit:cover; }
+  .about-text h2{ font-size:2rem; font-weight:800; margin-bottom:18px; }
+  .about-text p{ margin-bottom:16px; color:var(--muted); }
+  .about-stats{ display:flex; gap:40px; margin-top:28px; }
+  .about-stats div strong{ display:block; font-size:1.7rem; color:var(--teal); font-family:'Poppins',sans-serif; }
+  .about-stats div span{ font-size:0.85rem; color:var(--muted); }
+
+  /* Features */
+  .features{ background:var(--cream); }
+  .feature-grid{
+    display:grid; grid-template-columns:repeat(4,1fr); gap:26px; max-width:1180px; margin:0 auto;
+  }
+  .feature-card{
+    background:#fff; padding:34px 26px; border-radius:var(--radius); text-align:center;
+    box-shadow:var(--shadow); transition:transform .25s;
+  }
+  .feature-card:hover{ transform:translateY(-6px); }
+  .feature-card .icon{
+    width:56px; height:56px; border-radius:16px; background:var(--teal-light); color:var(--teal);
+    display:flex; align-items:center; justify-content:center; font-size:1.5rem; margin:0 auto 18px;
+  }
+  .feature-card h3{ font-size:1.08rem; margin-bottom:10px; }
+  .feature-card p{ font-size:0.9rem; color:var(--muted); }
+
+  /* Finishes */
+  .finishes{ background:var(--mint); }
+  .finish-grid{
+    display:grid; grid-template-columns:repeat(4,1fr); gap:22px; max-width:1180px; margin:0 auto;
+  }
+  .finish-card{
+    background:#fff; border-radius:var(--radius); overflow:hidden; box-shadow:var(--shadow); transition:transform .25s;
+  }
+  .finish-card:hover{ transform:translateY(-4px); }
+  .finish-card .finish-photo{ height:170px; overflow:hidden; }
+  .finish-card .finish-photo img{ width:100%; height:100%; object-fit:cover; }
+  .finish-card .finish-label{ padding:14px 16px; }
+  .finish-card .finish-label .fname{ font-weight:700; color:var(--navy); font-size:0.95rem; }
+  .finish-card .finish-label .fcode{ font-size:0.78rem; color:var(--muted); letter-spacing:0.5px; margin-top:2px; }
+
+  /* Visualizer */
+  .visualizer{ background:#fff; }
+  .viz-card{
+    max-width:1000px; margin:0 auto; background:var(--mint); border-radius:var(--radius);
+    padding:40px; box-shadow:var(--shadow);
+  }
+  .viz-grid{ display:grid; grid-template-columns:1fr 1fr; gap:40px; }
+  .viz-label{ display:block; font-weight:700; color:var(--navy); font-size:0.9rem; margin-bottom:10px; }
+  .viz-upload{
+    border:2px dashed rgba(30,58,82,0.25); border-radius:14px; background:#fff;
+    min-height:220px; display:flex; align-items:center; justify-content:center; flex-direction:column;
+    cursor:pointer; overflow:hidden; text-align:center; padding:20px; transition:border-color .2s;
+  }
+  .viz-upload:hover{ border-color:var(--teal); }
+  .viz-upload-icon{ font-size:2rem; margin-bottom:10px; }
+  .viz-upload p{ font-weight:600; color:var(--navy); margin-bottom:4px; }
+  .viz-upload span{ font-size:0.8rem; color:var(--muted); }
+  #viz-preview-img{ width:100%; height:220px; object-fit:cover; border-radius:12px; display:none; }
+  .viz-col select, .viz-col input[type="text"], .viz-col input[type="email"]{
+    width:100%; padding:12px 14px; margin-bottom:14px; border:1.5px solid rgba(30,58,82,0.12);
+    border-radius:10px; font-family:inherit; font-size:0.95rem; background:#fff;
+  }
+  .viz-col button{
+    background:var(--navy); color:#fff; border:none; padding:15px 28px; border-radius:50px;
+    font-weight:700; font-size:1rem; cursor:pointer; width:100%; transition:background .2s;
+  }
+  .viz-col button:hover{ background:var(--teal); }
+  .viz-col button:disabled{ opacity:0.65; cursor:not-allowed; }
+  #viz-result{ margin-top:22px; display:none; }
+  #viz-result img{ width:100%; border-radius:14px; box-shadow:var(--shadow); margin-bottom:12px; }
+  .viz-success-msg{ background:var(--teal-light); color:var(--teal); padding:12px 14px; border-radius:10px; font-size:0.9rem; font-weight:600; }
+  #viz-error{ display:none; margin-top:16px; background:#fdecea; color:#b3261e; padding:12px 14px; border-radius:10px; font-size:0.9rem; }
+  @media (max-width:900px){ .viz-grid{ grid-template-columns:1fr; } .viz-card{ padding:26px; } }
+
+  /* Services */
+  .services{ background:linear-gradient(160deg, var(--navy), var(--navy-2)); color:#fff; }
+  .services .section-head h2{ color:#fff; }
+  .services .section-head p{ color:#b9c8d3; }
+  .service-grid{
+    display:grid; grid-template-columns:repeat(3,1fr); gap:26px; max-width:1180px; margin:0 auto;
+  }
+  .service-card{
+    background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.14);
+    padding:32px; border-radius:var(--radius); backdrop-filter:blur(6px); transition:background .2s;
+  }
+  .service-card:hover{ background:rgba(255,255,255,0.1); }
+  .service-card h3{ color:#fff; font-size:1.2rem; margin-bottom:10px; }
+  .service-card p{ color:#b9c8d3; font-size:0.95rem; }
+
+  /* Process */
+  .process{ background:var(--mint); }
+  .process-grid{
+    display:grid; grid-template-columns:repeat(4,1fr); gap:26px; max-width:1180px; margin:0 auto; text-align:center;
+  }
+  .process-step{ background:#fff; border-radius:var(--radius); padding:32px 20px; box-shadow:var(--shadow); }
+  .process-step .num{
+    width:44px; height:44px; border-radius:50%; background:var(--teal); color:#fff;
+    display:flex; align-items:center; justify-content:center; font-weight:700; margin:0 auto 16px; font-family:'Poppins',sans-serif;
+  }
+  .process-step h3{ font-size:1.02rem; margin-bottom:8px; }
+  .process-step p{ font-size:0.88rem; color:var(--muted); }
+
+
+  /* CTA */
+  .cta{
+    background:linear-gradient(135deg, var(--teal), #3a7d75);
+    color:#fff; text-align:center; padding:80px 24px; border-radius:32px; max-width:1180px; margin:0 auto;
+  }
+  .cta h2{ color:#fff; font-size:2.1rem; font-weight:800; margin-bottom:14px; }
+  .cta p{ color:#e3f2f0; margin-bottom:30px; }
+  .cta .btn-primary{ background:#fff; color:var(--teal); }
+  .cta .btn-primary:hover{ background:var(--navy); color:#fff; }
+
+  /* Contact */
+  .contact{ background:var(--cream); }
+  .contact-grid{
+    display:grid; grid-template-columns:1fr 1fr; gap:54px; max-width:1180px; margin:0 auto;
+  }
+  .contact-info{ background:#fff; border-radius:var(--radius); padding:38px; box-shadow:var(--shadow); }
+  .contact-info h3{ font-size:1.3rem; margin-bottom:20px; }
+  .contact-info .row{ display:flex; gap:14px; margin-bottom:20px; align-items:flex-start; }
+  .contact-info .row .ico{
+    width:38px; height:38px; border-radius:10px; background:var(--teal-light); color:var(--teal);
+    display:flex; align-items:center; justify-content:center; font-size:1rem; flex-shrink:0;
+  }
+  .contact-info .row .label{ font-weight:700; color:var(--navy); font-size:0.9rem; }
+  .contact-info .row .val{ color:var(--muted); font-size:0.92rem; }
+  .contact-info .row .val a{ color:var(--muted); transition:color .2s; }
+  .contact-info .row .val a:hover{ color:var(--teal); }
+  form{ background:#fff; padding:38px; border-radius:var(--radius); box-shadow:var(--shadow); }
+  form label{ display:block; font-size:0.83rem; font-weight:700; margin-bottom:6px; color:var(--navy); }
+  form input, form select, form textarea{
+    width:100%; padding:12px 14px; margin-bottom:18px; border:1.5px solid rgba(30,58,82,0.12);
+    border-radius:10px; font-family:inherit; font-size:0.95rem; background:var(--cream); transition:border-color .2s;
+  }
+  form input:focus, form select:focus, form textarea:focus{ outline:none; border-color:var(--teal); }
+  form textarea{ resize:vertical; min-height:100px; }
+  form button{
+    background:var(--navy); color:#fff; border:none; padding:15px 28px; border-radius:50px;
+    font-weight:700; font-size:1rem; cursor:pointer; width:100%; transition:background .2s;
+  }
+  form button:hover{ background:var(--teal); }
+
+  /* Footer */
+  footer{ background:var(--navy-2); color:#a9bac7; padding:56px 24px 26px; }
+  .footer-top{
+    display:flex; justify-content:space-between; align-items:flex-start; max-width:1180px; margin:0 auto 36px;
+    flex-wrap:wrap; gap:30px;
+  }
+  .footer-tagline{ max-width:320px; font-size:0.9rem; }
+  .foot-links{ display:flex; gap:28px; list-style:none; flex-wrap:wrap; }
+  .foot-links a{ color:#a9bac7; font-size:0.9rem; transition:color .2s; }
+  .foot-links a:hover{ color:#fff; }
+  .footer-bottom{
+    max-width:1180px; margin:0 auto; padding-top:24px; border-top:1px solid rgba(255,255,255,0.1);
+    text-align:center; font-size:0.82rem; color:#7c8f9c;
   }
 
-  try {
-    const body = await req.json();
-    const { imageBase64, imageMime, finishName, finishCode, customerEmail, customerName } = body || {};
+  @media (max-width: 980px){
+    .hero-grid, .about-grid, .contact-grid{ grid-template-columns:1fr; }
+    .hero-visual{ order:-1; max-width:420px; margin:0 auto; }
+    .feature-grid{ grid-template-columns:repeat(2,1fr); }
+    .finish-grid{ grid-template-columns:repeat(3,1fr); }
+    .service-grid{ grid-template-columns:1fr; }
+    .process-grid{ grid-template-columns:repeat(2,1fr); }
+  }
+  @media (max-width: 640px){
+    .nav-links{ display:none; }
+    .menu-toggle{ display:block; }
+    .hero h1{ font-size:2.1rem; }
+    .feature-grid, .process-grid{ grid-template-columns:1fr; }
+    .finish-grid{ grid-template-columns:repeat(2,1fr); }
+    .trust-bar{ gap:22px; font-size:0.8rem; }
+    section{ padding:64px 20px; }
+  }
+</style>
+</head>
+<body>
 
-    if (!imageBase64 || !finishName || !customerEmail) {
-      return new Response(JSON.stringify({ error: "Missing required fields" }), { status: 400 });
-    }
+<header>
+  <nav class="nav">
+    <a href="#" class="logo-lockup logo-mark">
+      <img src="westfield-logo.png" alt="Westfield Cabinet Co." style="height:56px; width:auto; display:block;">
+    </a>
+    <ul class="nav-links">
+      <li><a href="#about">About</a></li>
+      <li><a href="#features">Why RTA</a></li>
+      <li><a href="#finishes">Finishes</a></li>
+      <li><a href="#visualizer">Visualizer</a></li>
+      <li><a href="#services">Services</a></li>
+      <li><a href="#process">Process</a></li>
+      <li><a href="#contact">Contact</a></li>
+    </ul>
+    <a href="#contact" class="nav-cta">Get a Free Quote</a>
+  </nav>
+</header>
 
-    const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
-    const RESEND_API_KEY = process.env.RESEND_API_KEY;
-    const LEAD_EMAIL = process.env.LEAD_EMAIL || "kwalter@westfieldcabinetco.com";
-    const FROM_EMAIL = process.env.FROM_EMAIL || "quotes@westfieldcabinetco.com";
+<section class="hero">
+  <div class="hero-grid">
+    <div>
+      <span class="tag">● Family Owned &nbsp;·&nbsp; Based in Strongsville, OH</span>
+      <h1>Quality RTA Cabinets, <span class="accent">Delivered Flat</span> and Priced Fair</h1>
+      <p>Plywood boxes, dovetail drawers, and soft-close hinges standard on every cabinet — built for DIYers and contractors who want a premium product without the premium markup. Email us your existing kitchen dimensions and we'll include a free 3D rendering with your quote.</p>
+      <div class="hero-buttons">
+        <a href="#contact" class="btn-primary">Get a Free Quote + 3D Rendering</a>
+        <a href="#services" class="btn-secondary">Browse Our Cabinets</a>
+      </div>
+    </div>
+    <div class="hero-visual hero-visual-logo">
+      <img src="westfield-logo.png" alt="Westfield Cabinet Co. logo" style="max-width:300px; width:80%; display:block;">
+    </div>
+  </div>
+</section>
 
-    if (!GEMINI_API_KEY || !RESEND_API_KEY) {
-      return new Response(
-        JSON.stringify({ error: "Server is not configured. Missing API keys." }),
-        { status: 500 }
-      );
-    }
+<div class="trust-bar">
+  <div><span class="dot"></span>Full Plywood Construction</div>
+  <div><span class="dot"></span>Dovetail Drawer Boxes</div>
+  <div><span class="dot"></span>Soft-Close Hinges &amp; Slides</div>
+  <div><span class="dot"></span>Ready-to-Assemble, Ships Flat</div>
+  <div><span class="dot"></span>Local Full-Assembly Delivery Available</div>
+</div>
 
-    // ---- 1. Fetch a real photo of the chosen finish to use as a style reference ----
-    // This is the key to getting an actual new-cabinet look (door profile, wood grain,
-    // hardware) instead of Gemini just recoloring the existing doors: we show it a real
-    // Westfield sample photo of that exact finish alongside the customer's kitchen.
-    const FINISH_FILENAMES = {
-      ASP: "finish-aspen-white.jpg",
-      BC: "finish-bristol-chocolate.jpg",
-      HS: "finish-hickory-shaker.jpg",
-      MO: "finish-glazed-mocha.jpg",
-      NG: "finish-winchester-grey.jpg",
-      PS: "finish-platinum-shaker.jpg",
-      WPG: "finish-west-point-grey.jpg",
-      WS: "finish-white-shaker.jpg",
-      MBS: "finish-midnight-black-shaker.jpg",
-      FS: "finish-fresh-sage.jpg",
-      CS: "finish-carmel-shaker.jpg"
-    };
-    const SITE_URL = process.env.URL || "https://westfieldcabinet.com";
-    const referenceFilename = FINISH_FILENAMES[finishCode];
-    let referenceImageB64 = null;
-    if (referenceFilename) {
-      try {
-        const refRes = await fetch(`${SITE_URL}/${referenceFilename}`);
-        if (refRes.ok) {
-          const refBuffer = await refRes.arrayBuffer();
-          referenceImageB64 = Buffer.from(refBuffer).toString("base64");
+<section class="about" id="about">
+  <div class="about-grid">
+    <div class="about-img"><img src="kitchen-island-weathered-gray.jpg" alt="Westfield Cabinet Co. weathered gray kitchen island with seating"></div>
+    <div class="about-text">
+      <h2>A Northeast Ohio Family Business Built on Quality</h2>
+      <p>Westfield Cabinet Co. is a family-owned RTA cabinet supplier based in Strongsville, Ohio, serving Cleveland and the surrounding area. We started this business on a simple idea: homeowners and contractors shouldn't have to choose between quality construction and a fair price.</p>
+      <p>Every cabinet we sell is built to the same standard — solid plywood boxes, dovetail-joined drawers, and soft-close hardware — because that's what a cabinet should be, not just what the high-end brands charge extra for.</p>
+      <div class="about-stats">
+        <div><strong>100%</strong><span>Plywood Construction</span></div>
+        <div><strong>Local</strong><span>Strongsville Owned &amp; Operated</span></div>
+        <div><strong>RTA</strong><span>Ships Flat, Ready to Assemble</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="features" id="features">
+  <div class="section-head">
+    <div class="eyebrow">The Westfield Standard</div>
+    <h2>Every Cabinet, No Exceptions</h2>
+    <p>These aren't upgrade options — they're standard on every single cabinet we ship.</p>
+  </div>
+  <div class="feature-grid">
+    <div class="feature-card">
+      <div class="icon">🪵</div>
+      <h3>Plywood Boxes</h3>
+      <p>Full plywood construction throughout — no particle board — for cabinets that hold up for decades.</p>
+    </div>
+    <div class="feature-card">
+      <div class="icon">📐</div>
+      <h3>Dovetail Drawers</h3>
+      <p>Real dovetail joinery on every drawer box for maximum strength and a furniture-grade finish.</p>
+    </div>
+    <div class="feature-card">
+      <div class="icon">🔇</div>
+      <h3>Soft-Close Hinges</h3>
+      <p>Soft-close hinges and drawer slides come standard — no slamming doors, no extra charge.</p>
+    </div>
+    <div class="feature-card">
+      <div class="icon">💰</div>
+      <h3>Honest Pricing</h3>
+      <p>RTA pricing cuts out the middleman so you get a premium cabinet for a fraction of the cost.</p>
+    </div>
+  </div>
+</section>
+
+<section class="finishes" id="finishes">
+  <div class="section-head">
+    <div class="eyebrow">Available Finishes</div>
+    <h2>11 Colors &amp; Wood Finishes</h2>
+    <p>Every finish below is built to the same Westfield standard — plywood boxes, dovetail drawers, soft-close hardware.</p>
+  </div>
+  <div class="finish-grid">
+    <div class="finish-card">
+      <div class="finish-photo"><img src="finish-aspen-white.jpg" alt="Aspen White cabinet finish"></div>
+      <div class="finish-label"><div class="fname">Aspen White</div><div class="fcode">ASP</div></div>
+    </div>
+    <div class="finish-card">
+      <div class="finish-photo"><img src="finish-bristol-chocolate.jpg" alt="Bristol Chocolate cabinet finish"></div>
+      <div class="finish-label"><div class="fname">Bristol Chocolate</div><div class="fcode">BC</div></div>
+    </div>
+    <div class="finish-card">
+      <div class="finish-photo"><img src="finish-hickory-shaker.jpg" alt="Hickory Shaker cabinet finish"></div>
+      <div class="finish-label"><div class="fname">Hickory Shaker</div><div class="fcode">HS</div></div>
+    </div>
+    <div class="finish-card">
+      <div class="finish-photo"><img src="finish-glazed-mocha.jpg" alt="Glazed Mocha cabinet finish"></div>
+      <div class="finish-label"><div class="fname">Glazed Mocha</div><div class="fcode">MO</div></div>
+    </div>
+    <div class="finish-card">
+      <div class="finish-photo"><img src="finish-winchester-grey.jpg" alt="Winchester Grey cabinet finish"></div>
+      <div class="finish-label"><div class="fname">Winchester Grey</div><div class="fcode">NG</div></div>
+    </div>
+    <div class="finish-card">
+      <div class="finish-photo"><img src="finish-platinum-shaker.jpg" alt="Platinum Shaker cabinet finish"></div>
+      <div class="finish-label"><div class="fname">Platinum Shaker</div><div class="fcode">PS</div></div>
+    </div>
+    <div class="finish-card">
+      <div class="finish-photo"><img src="finish-west-point-grey.jpg" alt="West Point Grey cabinet finish"></div>
+      <div class="finish-label"><div class="fname">West Point Grey</div><div class="fcode">WPG</div></div>
+    </div>
+    <div class="finish-card">
+      <div class="finish-photo"><img src="finish-white-shaker.jpg" alt="White Shaker cabinet finish"></div>
+      <div class="finish-label"><div class="fname">White Shaker</div><div class="fcode">WS</div></div>
+    </div>
+    <div class="finish-card">
+      <div class="finish-photo"><img src="finish-midnight-black-shaker.jpg" alt="Midnight Black Shaker cabinet finish"></div>
+      <div class="finish-label"><div class="fname">Midnight Black Shaker</div><div class="fcode">MBS</div></div>
+    </div>
+    <div class="finish-card">
+      <div class="finish-photo"><img src="finish-fresh-sage.jpg" alt="Fresh Sage cabinet finish"></div>
+      <div class="finish-label"><div class="fname">Fresh Sage</div><div class="fcode">FS</div></div>
+    </div>
+    <div class="finish-card">
+      <div class="finish-photo"><img src="finish-carmel-shaker.jpg" alt="Carmel Shaker cabinet finish"></div>
+      <div class="finish-label"><div class="fname">Carmel Shaker</div><div class="fcode">CS</div></div>
+    </div>
+  </div>
+</section>
+
+<section class="visualizer" id="visualizer">
+  <div class="section-head">
+    <div class="eyebrow">See It Before You Buy</div>
+    <h2>Visualize Your Kitchen</h2>
+    <p>Upload a photo of your current kitchen, pick a finish, and we'll generate a free AI preview of what it could look like — sent straight to your email.</p>
+  </div>
+  <div class="viz-card">
+    <form id="viz-form">
+      <div class="viz-grid">
+        <div class="viz-col">
+          <label class="viz-label">1. Upload a photo of your kitchen</label>
+          <div class="viz-upload" id="viz-upload-zone">
+            <input type="file" id="viz-photo" accept="image/*" hidden>
+            <div id="viz-upload-placeholder">
+              <div class="viz-upload-icon">📷</div>
+              <p>Click to upload or drag a photo here</p>
+              <span>JPG or PNG works best</span>
+            </div>
+            <img id="viz-preview-img" alt="Your uploaded kitchen photo preview">
+          </div>
+
+          <label class="viz-label" style="margin-top:22px;">2. Pick a finish</label>
+          <select id="viz-finish" required>
+            <option value="" disabled selected>Choose a cabinet finish...</option>
+            <option value="Aspen White|ASP">Aspen White (ASP)</option>
+            <option value="Bristol Chocolate|BC">Bristol Chocolate (BC)</option>
+            <option value="Hickory Shaker|HS">Hickory Shaker (HS)</option>
+            <option value="Glazed Mocha|MO">Glazed Mocha (MO)</option>
+            <option value="Winchester Grey|NG">Winchester Grey (NG)</option>
+            <option value="Platinum Shaker|PS">Platinum Shaker (PS)</option>
+            <option value="West Point Grey|WPG">West Point Grey (WPG)</option>
+            <option value="White Shaker|WS">White Shaker (WS)</option>
+            <option value="Midnight Black Shaker|MBS">Midnight Black Shaker (MBS)</option>
+            <option value="Fresh Sage|FS">Fresh Sage (FS)</option>
+            <option value="Carmel Shaker|CS">Carmel Shaker (CS)</option>
+          </select>
+        </div>
+
+        <div class="viz-col">
+          <label class="viz-label">3. Where should we send your preview?</label>
+          <input type="text" id="viz-name" placeholder="Your name (optional)">
+          <input type="email" id="viz-email" placeholder="you@email.com" required>
+          <p style="position:absolute; left:-9999px;" aria-hidden="true">
+            <label>Leave this blank: <input id="viz-bot-field" tabindex="-1" autocomplete="off"></label>
+          </p>
+          <button type="submit" id="viz-submit-btn">Generate My Kitchen Preview</button>
+          <p style="font-size:0.8rem; color:var(--muted); margin-top:10px;">Takes about 20–30 seconds. We'll also send a copy to Westfield Cabinet Co. so Kevin can follow up with a formal quote.</p>
+
+          <div id="viz-result">
+            <img id="viz-result-img" alt="AI preview of your kitchen with new cabinets">
+            <p class="viz-success-msg">Your preview is ready — we've also emailed it to you! Kevin will follow up soon with a formal quote.</p>
+            <p style="font-size:0.78rem; color:var(--muted); margin-top:10px;">Note: the countertop and hardware shown are for visual purposes only, to give a fuller sense of the finished look. Countertops are not a product or service offered by Westfield Cabinet Co.</p>
+          </div>
+          <div id="viz-error"></div>
+        </div>
+      </div>
+    </form>
+  </div>
+  <script>
+    (function () {
+      var zone = document.getElementById('viz-upload-zone');
+      var fileInput = document.getElementById('viz-photo');
+      var placeholder = document.getElementById('viz-upload-placeholder');
+      var previewImg = document.getElementById('viz-preview-img');
+      var form = document.getElementById('viz-form');
+      var submitBtn = document.getElementById('viz-submit-btn');
+      var resultBox = document.getElementById('viz-result');
+      var resultImg = document.getElementById('viz-result-img');
+      var errorBox = document.getElementById('viz-error');
+
+      var photoDataUrl = null;
+
+      zone.addEventListener('click', function () { fileInput.click(); });
+      fileInput.addEventListener('change', handleFile);
+      zone.addEventListener('dragover', function (e) { e.preventDefault(); zone.style.borderColor = 'var(--teal)'; });
+      zone.addEventListener('dragleave', function () { zone.style.borderColor = ''; });
+      zone.addEventListener('drop', function (e) {
+        e.preventDefault();
+        zone.style.borderColor = '';
+        if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+          fileInput.files = e.dataTransfer.files;
+          handleFile();
         }
-      } catch {
-        // If the reference photo can't be fetched, fall back to text-only prompting below.
+      });
+
+      function handleFile() {
+        var file = fileInput.files[0];
+        if (!file) return;
+        var reader = new FileReader();
+        reader.onload = function (e) {
+          var img = new Image();
+          img.onload = function () {
+            var maxDim = 1600;
+            var w = img.width, h = img.height;
+            if (w > maxDim || h > maxDim) {
+              if (w > h) { h = Math.round(h * (maxDim / w)); w = maxDim; }
+              else { w = Math.round(w * (maxDim / h)); h = maxDim; }
+            }
+            var canvas = document.createElement('canvas');
+            canvas.width = w; canvas.height = h;
+            canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+            photoDataUrl = canvas.toDataURL('image/jpeg', 0.85);
+            previewImg.src = photoDataUrl;
+            previewImg.style.display = 'block';
+            placeholder.style.display = 'none';
+          };
+          img.src = e.target.result;
+        };
+        reader.readAsDataURL(file);
       }
-    }
 
-    // ---- 2. Generate the AI preview image ----
-    const promptParts = [];
-    if (referenceImageB64) {
-      promptParts.push({
-        text:
-          `Image 1 is a real photo of a customer's kitchen. Image 2 is an official Westfield ` +
-          `Cabinet Co. sample photo of their "${finishName}" cabinet finish, showing the correct ` +
-          `door style, panel profile, wood grain/texture, sheen, and hardware for that finish.\n\n` +
-          `Edit Image 1 so that every cabinet door, drawer front, and cabinet box is replaced with ` +
-          `new cabinets that match the door style, material, texture, color, and hardware shown in ` +
-          `Image 2 — not just a color tint, but the actual door profile and finish shown in Image 2. ` +
-          `This includes ALL cabinetry visible in Image 1: perimeter/wall cabinets, base cabinets, ` +
-          `and — importantly — any kitchen island, peninsula, or freestanding cabinetry as well. Do ` +
-          `not skip or leave unchanged any cabinet doors or drawer fronts anywhere in the photo, ` +
-          `including islands.\n\n` +
-          `IMPORTANT — do a complete replacement, not a recolor: for EVERY individual door and ` +
-          `drawer front in Image 1, fully remove the original panel details (raised panel lines, ` +
-          `moulding, flat panel grooves, existing wood grain direction, existing knots) and rebuild ` +
-          `each one from scratch to exactly match Image 2's door style, panel lines, and grain — ` +
-          `on every single door and drawer, with zero exceptions. Check corner cabinets, small ` +
-          `doors, cabinets above the refrigerator, cabinets above/around the range hood, and any ` +
-          `doors partially visible at the edge of the frame — none of these should retain any trace ` +
-          `of the original door pattern underneath the new color. If you are not fully confident a ` +
-          `door has been completely rebuilt to match Image 2, redo it rather than leaving the ` +
-          `original panel lines visible.\n\n` +
-          `Also update the cabinet door/drawer hardware (knobs and pulls) to a style and finish ` +
-          `(e.g. matte black, brushed nickel, oil-rubbed bronze, brass) that realistically ` +
-          `complements the new "${finishName}" cabinets. Also update the visible countertop surface ` +
-          `to a complementary modern countertop material and color that pairs naturally with the new ` +
-          `cabinets, so the whole kitchen looks cohesive and finished.\n\n` +
-          `Keep everything else in Image 1 exactly the same: room layout, backsplash, flooring, ` +
-          `appliances, wall color, lighting, and camera angle. The output should be a single ` +
-          `photorealistic photo of the customer's kitchen with genuinely new "${finishName}" ` +
-          `cabinets, new matching hardware, and a new complementary countertop, installed ` +
-          `throughout, including the island if one is present.`
-      });
-      promptParts.push({ inline_data: { mime_type: imageMime || "image/jpeg", data: imageBase64 } });
-      promptParts.push({ inline_data: { mime_type: "image/jpeg", data: referenceImageB64 } });
-    } else {
-      promptParts.push({
-        text:
-          `Edit this real kitchen photo so every cabinet door, drawer front, and cabinet box is ` +
-          `replaced with new "${finishName}" cabinets — a real door style and material change, not ` +
-          `just a color tint. This includes ALL cabinetry in the photo: perimeter/wall cabinets, ` +
-          `base cabinets, and any kitchen island, peninsula, or freestanding cabinetry too — do not ` +
-          `skip the island. For EVERY individual door and drawer front, fully remove the original ` +
-          `panel details (raised panel lines, moulding, existing wood grain, knots) and rebuild each ` +
-          `one from scratch in the new finish — including corner cabinets, small doors, cabinets ` +
-          `above the refrigerator or range hood, and any doors at the edge of the frame. None should ` +
-          `retain any trace of the original door pattern underneath the new color. Also update the ` +
-          `door/drawer hardware (knobs and pulls) to a style and finish that realistically ` +
-          `finish that realistically complements the new cabinets, and update the visible ` +
-          `countertop to a complementary modern countertop material and color so the kitchen looks ` +
-          `cohesive and finished. Keep the room layout, backsplash, flooring, appliances, wall ` +
-          `color, lighting, and camera angle exactly the same. Photorealistic result.`
-      });
-      promptParts.push({ inline_data: { mime_type: imageMime || "image/jpeg", data: imageBase64 } });
-    }
+      form.addEventListener('submit', function (e) {
+        e.preventDefault();
+        errorBox.style.display = 'none';
+        resultBox.style.display = 'none';
 
-    const geminiRes = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image:generateContent?key=${GEMINI_API_KEY}`,
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          contents: [{ parts: promptParts }]
+        var botField = document.getElementById('viz-bot-field').value;
+        if (botField) return;
+
+        if (!photoDataUrl) {
+          errorBox.textContent = 'Please upload a photo of your kitchen first.';
+          errorBox.style.display = 'block';
+          return;
+        }
+        var finishRaw = document.getElementById('viz-finish').value;
+        if (!finishRaw) {
+          errorBox.textContent = 'Please choose a finish.';
+          errorBox.style.display = 'block';
+          return;
+        }
+        var parts = finishRaw.split('|');
+        var finishName = parts[0], finishCode = parts[1];
+        var email = document.getElementById('viz-email').value;
+        var name = document.getElementById('viz-name').value;
+        var base64 = photoDataUrl.split(',')[1];
+
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Generating your preview... (20-30s)';
+
+        fetch('/.netlify/functions/visualize', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            imageBase64: base64,
+            imageMime: 'image/jpeg',
+            finishName: finishName,
+            finishCode: finishCode,
+            customerEmail: email,
+            customerName: name
+          })
         })
-      }
-    );
+          .then(function (res) { return res.json(); })
+          .then(function (data) {
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Generate My Kitchen Preview';
+            if (data.error) {
+              errorBox.textContent = "Something went wrong generating your preview. Please try again, or just email your photo directly to kwalter@westfieldcabinetco.com.";
+              errorBox.style.display = 'block';
+              return;
+            }
+            resultImg.src = data.previewImage;
+            resultBox.style.display = 'block';
+            resultBox.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          })
+          .catch(function () {
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Generate My Kitchen Preview';
+            errorBox.textContent = "Something went wrong. Please try again, or email your photo directly to kwalter@westfieldcabinetco.com.";
+            errorBox.style.display = 'block';
+          });
+      });
+    })();
+  </script>
+</section>
 
-    const geminiData = await geminiRes.json();
+<section class="services" id="services">
+  <div class="section-head">
+    <div class="eyebrow">Who We Serve</div>
+    <h2>Built for DIYers and Contractors Alike</h2>
+    <p>Whether it's your own kitchen or your next job site, we've got you covered.</p>
+  </div>
+  <div class="service-grid">
+    <div class="service-card">
+      <h3>DIY Homeowners</h3>
+      <p>Clear instructions, straightforward assembly, and a quality result — no contractor required. Save on labor without sacrificing craftsmanship.</p>
+    </div>
+    <div class="service-card">
+      <h3>Contractors &amp; Builders</h3>
+      <p>Consistent quality, reliable lead times, and volume pricing so you can quote with confidence on every job.</p>
+    </div>
+    <div class="service-card">
+      <h3>Kitchen &amp; Bath Remodels</h3>
+      <p>Full lines of base, wall, and vanity cabinets in a range of styles and finishes to match any remodel.</p>
+    </div>
+  </div>
+</section>
 
-    if (!geminiRes.ok) {
-      return new Response(
-        JSON.stringify({ error: "AI image generation failed", detail: geminiData }),
-        { status: 502 }
-      );
-    }
+<section class="process" id="process">
+  <div class="section-head">
+    <div class="eyebrow">How It Works</div>
+    <h2>From Quote to Kitchen</h2>
+  </div>
+  <div class="process-grid">
+    <div class="process-step">
+      <div class="num">1</div>
+      <h3>Email Your Dimensions</h3>
+      <p>Send us your existing kitchen measurements or plans and we'll put together a free, no-pressure quote — plus a free 3D rendering of your new kitchen.</p>
+    </div>
+    <div class="process-step">
+      <div class="num">2</div>
+      <h3>Choose Your Style</h3>
+      <p>Pick from our range of door styles and finishes to match your space.</p>
+    </div>
+    <div class="process-step">
+      <div class="num">3</div>
+      <h3>We Ship It Flat</h3>
+      <p>Your cabinets arrive ready-to-assemble, packed carefully for a damage-free delivery. Local customers can also choose full assembly before delivery for an additional fee.</p>
+    </div>
+    <div class="process-step">
+      <div class="num">4</div>
+      <h3>Assemble &amp; Install</h3>
+      <p>Simple assembly with clear instructions — or have your contractor handle it.</p>
+    </div>
+  </div>
+</section>
 
-    const parts = geminiData?.candidates?.[0]?.content?.parts || [];
-    const imagePart = parts.find((p) => p.inlineData || p.inline_data);
-    const resultImageB64 =
-      (imagePart && (imagePart.inlineData?.data || imagePart.inline_data?.data)) || null;
+<section>
+  <div class="cta">
+    <h2>Ready to Upgrade Your Kitchen?</h2>
+    <p>Get a free, no-obligation quote from your local Strongsville-based cabinet experts — email us your existing kitchen dimensions and we'll include a free 3D rendering of your new space.</p>
+    <a href="#contact" class="btn-primary">Get a Free Quote + 3D Rendering</a>
+  </div>
+</section>
 
-    if (!resultImageB64) {
-      return new Response(
-        JSON.stringify({ error: "AI did not return an image", detail: geminiData }),
-        { status: 502 }
-      );
-    }
+<section class="contact" id="contact">
+  <div class="section-head">
+    <div class="eyebrow">Get In Touch</div>
+    <h2>Request Your Free Quote &amp; 3D Rendering</h2>
+    <p>Tell us about your project and email over your existing kitchen dimensions — we'll include a free 3D rendering of your new kitchen with your quote, and get back to you within one business day.</p>
+  </div>
+  <div class="contact-grid">
+    <div class="contact-info">
+      <h3>Contact Information</h3>
+      <div class="row"><div class="ico">📞</div><div><div class="label">Phone / Mobile</div><div class="val"><a href="tel:+14404657954">+1 440-465-7954</a></div></div></div>
+      <div class="row"><div class="ico">✉️</div><div><div class="label">Email</div><div class="val"><a href="mailto:kwalter@westfieldcabinetco.com">kwalter@westfieldcabinetco.com</a></div></div></div>
+      <div class="row"><div class="ico">💬</div><div><div class="label">Messenger</div><div class="val"><a href="https://www.facebook.com/messages/t/61563247348963/" target="_blank" rel="noopener">Westfield Cabinet Co</a></div></div></div>
+      <div class="row"><div class="ico">📱</div><div><div class="label">WhatsApp</div><div class="val"><a href="https://wa.me/12166616639" target="_blank" rel="noopener">+1 216-661-6639</a></div></div></div>
+      <div class="row"><div class="ico">🕒</div><div><div class="label">Hours</div><div class="val">Mon–Fri: 8am–5pm · Sat: By appointment</div></div></div>
+      <div class="row"><div class="ico">🗺️</div><div><div class="label">Service Area</div><div class="val">Strongsville &amp; Greater Cleveland, OH</div></div></div>
+    </div>
+    <form id="quote-form" name="contact" method="POST" data-netlify="true" netlify-honeypot="bot-field">
+      <input type="hidden" name="form-name" value="contact">
+      <p style="position:absolute; left:-9999px;" aria-hidden="true">
+        <label>Don't fill this out if you're human: <input name="bot-field" tabindex="-1" autocomplete="off"></label>
+      </p>
+      <label for="name">Name</label>
+      <input type="text" id="name" name="name" placeholder="Your full name" required>
+      <label for="email">Email</label>
+      <input type="email" id="email" name="email" placeholder="you@email.com" required>
+      <label for="phone">Phone</label>
+      <input type="tel" id="phone" name="phone" placeholder="440-465-7954">
+      <label for="type">I am a...</label>
+      <select id="type" name="type">
+        <option>DIY Homeowner</option>
+        <option>Contractor / Builder</option>
+        <option>Other</option>
+      </select>
+      <label for="message">Project Details</label>
+      <textarea id="message" name="message" placeholder="Tell us about your kitchen or project..."></textarea>
+      <p style="font-size:0.85rem; color:var(--muted); margin:-6px 0 18px;">Have your existing kitchen dimensions? Email them to <a href="mailto:kwalter@westfieldcabinetco.com" style="color:var(--teal); font-weight:600;">kwalter@westfieldcabinetco.com</a> to get a free 3D rendering included with your quote.</p>
+      <button type="submit" id="quote-submit-btn">Send Quote Request</button>
+      <p id="quote-form-status" style="display:none; margin-top:14px; padding:12px 14px; border-radius:10px; font-size:0.9rem;"></p>
+    </form>
+    <script>
+      (function () {
+        var form = document.getElementById('quote-form');
+        var status = document.getElementById('quote-form-status');
+        var btn = document.getElementById('quote-submit-btn');
+        function encode(data) {
+          return Object.keys(data).map(function (key) {
+            return encodeURIComponent(key) + '=' + encodeURIComponent(data[key]);
+          }).join('&');
+        }
+        form.addEventListener('submit', function (e) {
+          e.preventDefault();
+          var formData = new FormData(form);
+          var payload = {};
+          formData.forEach(function (value, key) { payload[key] = value; });
+          btn.disabled = true;
+          btn.textContent = 'Sending...';
+          fetch('/', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: encode(payload)
+          })
+            .then(function () {
+              status.style.display = 'block';
+              status.style.background = 'var(--teal-light)';
+              status.style.color = 'var(--teal)';
+              status.textContent = "Thanks! Your quote request was sent — we'll be in touch within one business day.";
+              form.reset();
+              btn.textContent = 'Send Quote Request';
+              btn.disabled = false;
+            })
+            .catch(function () {
+              status.style.display = 'block';
+              status.style.background = '#fdecea';
+              status.style.color = '#b3261e';
+              status.textContent = "Something went wrong sending your request. Please email us directly at kwalter@westfieldcabinetco.com.";
+              btn.textContent = 'Send Quote Request';
+              btn.disabled = false;
+            });
+        });
+      })();
+    </script>
+  </div>
+</section>
 
-    // ---- 2. Email the customer their preview ----
-    const customerEmailPayload = {
-      from: `Westfield Cabinet Co. <${FROM_EMAIL}>`,
-      to: [customerEmail],
-      subject: `Your Kitchen With ${finishName} Cabinets`,
-      html: `
-        <p>Hi ${customerName || "there"},</p>
-        <p>Here's a preview of your kitchen with <strong>${finishName}</strong> cabinets from Westfield Cabinet Co. (attached).</p>
-        <p>This is an AI-generated visualization meant to give you a general sense of the finish — actual results will vary based on lighting, your exact cabinet layout, and materials. Note that the countertop and hardware shown are for visual purposes only, to give a more complete picture of the finished look — countertops are not a product or service offered by Westfield Cabinet Co., and hardware shown is a suggestion, not a specific product.</p>
-        <p>Want a formal quote, or have questions about this finish? Reach out any time:</p>
-        <p>
-          Kevin Walter — Westfield Cabinet Co.<br/>
-          Phone: (440) 465-7954<br/>
-          Email: kwalter@westfieldcabinetco.com<br/>
-          <a href="https://westfieldcabinet.com/#contact">westfieldcabinet.com</a>
-        </p>
-      `,
-      attachments: [
-        { filename: "your-new-kitchen.png", content: resultImageB64 }
-      ]
-    };
+<footer>
+  <div class="footer-top">
+    <div>
+      <span class="logo-lockup">
+        <span style="background:#fff; border-radius:12px; padding:6px 10px; display:inline-flex; align-items:center;">
+          <img src="westfield-logo.png" alt="Westfield Cabinet Co." style="height:42px; width:auto; display:block;">
+        </span>
+      </span>
+      <p class="footer-tagline" style="margin-top:14px;">Family-owned RTA cabinet supplier based in Strongsville, serving the greater Cleveland, Ohio area.</p>
+    </div>
+    <ul class="foot-links">
+      <li><a href="#about">About</a></li>
+      <li><a href="#finishes">Finishes</a></li>
+      <li><a href="#visualizer">Visualizer</a></li>
+      <li><a href="#services">Services</a></li>
+      <li><a href="#contact">Contact</a></li>
+    </ul>
+  </div>
+  <div class="footer-bottom">&copy; 2026 Westfield Cabinet Co. All rights reserved.</div>
+</footer>
 
-    const customerSend = await fetch("https://api.resend.com/emails", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${RESEND_API_KEY}`,
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify(customerEmailPayload)
-    });
-
-    // ---- 3. Email Kevin the lead ----
-    const leadEmailPayload = {
-      from: `Westfield Site Leads <${FROM_EMAIL}>`,
-      to: [LEAD_EMAIL],
-      subject: `New Visualizer Lead: ${customerName || customerEmail} — ${finishName}`,
-      html: `
-        <p>New kitchen visualizer lead:</p>
-        <ul>
-          <li><strong>Name:</strong> ${customerName || "(not provided)"}</li>
-          <li><strong>Email:</strong> ${customerEmail}</li>
-          <li><strong>Selected finish:</strong> ${finishName} (${finishCode || ""})</li>
-        </ul>
-        <p>Original photo and the AI-generated preview (same one sent to the customer) are attached.</p>
-      `,
-      attachments: [
-        { filename: "customer-original-photo.jpg", content: imageBase64 },
-        { filename: "ai-preview.png", content: resultImageB64 }
-      ]
-    };
-
-    const leadSend = await fetch("https://api.resend.com/emails", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${RESEND_API_KEY}`,
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify(leadEmailPayload)
-    });
-
-    const emailWarnings = [];
-    if (!customerSend.ok) emailWarnings.push("customer email failed to send");
-    if (!leadSend.ok) emailWarnings.push("lead email failed to send");
-
-    return new Response(
-      JSON.stringify({
-        success: true,
-        previewImage: `data:image/png;base64,${resultImageB64}`,
-        warnings: emailWarnings.length ? emailWarnings : undefined
-      }),
-      { status: 200, headers: { "Content-Type": "application/json" } }
-    );
-  } catch (err) {
-    return new Response(JSON.stringify({ error: err.message }), { status: 500 });
-  }
-};
+</body>
+</html>
