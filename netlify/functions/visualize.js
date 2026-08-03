@@ -11,7 +11,7 @@
 //   GEMINI_API_KEY   - from https://aistudio.google.com/apikey
 //   RESEND_API_KEY   - from https://resend.com (requires a verified sending domain)
 //   LEAD_EMAIL       - where new leads should land, e.g. kwalter@westfieldcabinetco.com
-//   FROM_EMAIL       - the "from" address to send as, e.g. quotes@westfieldcabinetco.com
+//   FROM_EMAIL       - the "from" address to send as, e.g. quotes@westfieldcabinet.com
 //                       (must be on a domain verified in Resend)
 
 export default async (req) => {
